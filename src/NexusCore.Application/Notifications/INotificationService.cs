@@ -12,7 +12,5 @@ public interface INotificationService
         string title,
         string body,
         string? linkPath,
-        string? recipientEmail,
-        string? emailSubject,
         CancellationToken cancellationToken = default);
 }

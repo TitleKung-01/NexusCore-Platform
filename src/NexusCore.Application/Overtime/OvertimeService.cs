@@ -160,8 +160,7 @@ public class OvertimeService(
             var manager = await profiles.FindByUserIdAsync(managerId, cancellationToken);
             if (manager is not null)
             {
-                await notifications.NotifyUserAsync(managerId, eventType, title, body, $"/overtime-requests/{item.Id}",
-                    manager.Email, title, cancellationToken);
+                await notifications.NotifyUserAsync(managerId, eventType, title, body, $"/overtime-requests/{item.Id}", cancellationToken);
             }
         }
     }
@@ -172,8 +171,7 @@ public class OvertimeService(
         if (employee is null)
             return;
 
-        await notifications.NotifyUserAsync(item.EmployeeId, eventType, title, body, $"/overtime-requests/{item.Id}",
-            employee.Email, title, cancellationToken);
+        await notifications.NotifyUserAsync(item.EmployeeId, eventType, title, body, $"/overtime-requests/{item.Id}", cancellationToken);
     }
 
     private bool IsOwner(OvertimeRequest item) => currentUser.UserId == item.EmployeeId;

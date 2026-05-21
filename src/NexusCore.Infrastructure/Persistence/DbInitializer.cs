@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using NexusCore.Domain.Constants;
 using NexusCore.Domain.Entities;
+using NexusCore.Infrastructure.Persistence.SeedData;
 
 namespace NexusCore.Infrastructure.Persistence;
 
@@ -56,54 +57,13 @@ public static class DbInitializer
                 {
                     UserId = adminUser.Id,
                     FullName = "ผู้ดูแล HR",
-                    Email = "admin@nexuscore.local",
+                    Email = "admin@hr-lite.local",
                     DepartmentId = hrDept.Id
                 });
             }
         }
 
-        if (!await db.Users.AnyAsync(u => u.Username == "manager"))
-        {
-            var managerId = Guid.NewGuid();
-            var employeeId = Guid.NewGuid();
-
-            db.Users.AddRange(
-                new User
-                {
-                    Id = managerId,
-                    Username = "manager",
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("password123"),
-                    Role = UserRoles.Manager,
-                    CreatedAtUtc = DateTime.UtcNow
-                },
-                new User
-                {
-                    Id = employeeId,
-                    Username = "employee",
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("password123"),
-                    Role = UserRoles.Employee,
-                    CreatedAtUtc = DateTime.UtcNow
-                });
-
-            db.EmployeeProfiles.AddRange(
-                new EmployeeProfile
-                {
-                    UserId = managerId,
-                    FullName = "สมชาย หัวหน้าทีม",
-                    Email = "manager@nexuscore.local",
-                    Phone = "081-111-1111",
-                    DepartmentId = engineering.Id
-                },
-                new EmployeeProfile
-                {
-                    UserId = employeeId,
-                    FullName = "สมหญิง พนักงาน",
-                    Email = "employee@nexuscore.local",
-                    Phone = "082-222-2222",
-                    DepartmentId = engineering.Id,
-                    ManagerId = managerId
-                });
-        }
+        await MockEmployeeSeed.SeedAsync(db);
 
         if (adminUser is null && !await db.Users.AnyAsync())
         {
@@ -120,7 +80,7 @@ public static class DbInitializer
             {
                 UserId = adminId,
                 FullName = "ผู้ดูแล HR",
-                Email = "admin@nexuscore.local",
+                Email = "admin@hr-lite.local",
                 DepartmentId = hrDept.Id
             });
         }
@@ -132,19 +92,25 @@ public static class DbInitializer
 
     private static async Task SeedLeaveEntitlementsAsync(AppDbContext db)
     {
-        if (await db.LeaveEntitlements.AnyAsync())
-            return;
-
         var year = DateTime.UtcNow.Year;
         var leaveTypes = await db.LeaveTypes.ToListAsync();
         var profiles = await db.EmployeeProfiles.ToListAsync();
         if (leaveTypes.Count == 0 || profiles.Count == 0)
             return;
 
+        var existing = await db.LeaveEntitlements
+            .Where(e => e.Year == year)
+            .Select(e => new { e.EmployeeId, e.LeaveTypeId })
+            .ToListAsync();
+        var existingSet = existing.Select(e => (e.EmployeeId, e.LeaveTypeId)).ToHashSet();
+
         foreach (var profile in profiles)
         {
             foreach (var leaveType in leaveTypes)
             {
+                if (existingSet.Contains((profile.UserId, leaveType.Id)))
+                    continue;
+
                 var days = leaveType.Code switch
                 {
                     "ANNUAL" => 10m,

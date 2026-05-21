@@ -167,8 +167,7 @@ public class ExpenseService(
             var manager = await profiles.FindByUserIdAsync(managerId, cancellationToken);
             if (manager is not null)
             {
-                await notifications.NotifyUserAsync(managerId, eventType, title, body, $"/expense-claims/{claim.Id}",
-                    manager.Email, title, cancellationToken);
+                await notifications.NotifyUserAsync(managerId, eventType, title, body, $"/expense-claims/{claim.Id}", cancellationToken);
             }
         }
     }
@@ -179,8 +178,7 @@ public class ExpenseService(
         if (employee is null)
             return;
 
-        await notifications.NotifyUserAsync(claim.EmployeeId, eventType, title, body, $"/expense-claims/{claim.Id}",
-            employee.Email, title, cancellationToken);
+        await notifications.NotifyUserAsync(claim.EmployeeId, eventType, title, body, $"/expense-claims/{claim.Id}", cancellationToken);
     }
 
     private bool IsOwner(ExpenseClaim claim) => currentUser.UserId == claim.EmployeeId;

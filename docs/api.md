@@ -12,7 +12,9 @@ Backend: `src/NexusCore.Api/` — React เรียกผ่าน Gateway `htt
 |----------|------|
 | admin | Hr |
 | manager | Manager |
-| employee | Employee |
+| employee | Employee (legacy — ใช้ `emp001` แทนได้) |
+| emp001 … emp030 | Employee |
+| mgr.eng, mgr.sales, mgr.hr | Manager |
 
 ## Auth
 
@@ -29,7 +31,9 @@ Backend: `src/NexusCore.Api/` — React เรียกผ่าน Gateway `htt
 | GET | `/api/departments`, `/api/leave-types` |
 | GET | `/api/leave-balances` |
 
-## Notifications
+## Notifications (in-app)
+
+แจ้งเตือนในระบบเท่านั้น — แสดงที่กระดิ่งบนหน้าเว็บ ไม่ส่งอีเมล
 
 | Method | Path |
 |--------|------|
@@ -77,10 +81,6 @@ Workflow คล้ายลา — `api/overtime-requests`, `api/expense-claims`
 ## Payslips (employee)
 
 | GET | `/api/payslips?scope=mine` |
-
-## Email (n8n)
-
-API ส่ง webhook ไป n8n — ไม่ส่ง SMTP เอง. ดู [docs/n8n/README.md](./n8n/README.md)
 
 ## Database
 

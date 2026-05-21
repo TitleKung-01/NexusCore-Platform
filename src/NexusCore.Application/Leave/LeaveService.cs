@@ -329,8 +329,7 @@ public class LeaveService(
             var manager = await profiles.FindByUserIdAsync(managerId, cancellationToken);
             if (manager is not null)
             {
-                await notifications.NotifyUserAsync(managerId, eventType, title, body, linkPath,
-                    manager.Email, title, cancellationToken);
+                await notifications.NotifyUserAsync(managerId, eventType, title, body, linkPath, cancellationToken);
             }
         }
     }
@@ -341,8 +340,7 @@ public class LeaveService(
         if (employee is null)
             return;
 
-        await notifications.NotifyUserAsync(leave.EmployeeId, eventType, title, body, linkPath,
-            employee.Email, title, cancellationToken);
+        await notifications.NotifyUserAsync(leave.EmployeeId, eventType, title, body, linkPath, cancellationToken);
     }
 
     private bool IsOwner(LeaveRequest leave) =>

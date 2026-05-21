@@ -70,7 +70,7 @@ public class AnnouncementService(
         foreach (var emp in employees)
         {
             await notifications.NotifyUserAsync(emp.UserId, "announcement.published", entity.Title, entity.Body,
-                "/announcements", emp.Email, entity.Title, cancellationToken);
+                "/announcements", cancellationToken);
         }
     }
 

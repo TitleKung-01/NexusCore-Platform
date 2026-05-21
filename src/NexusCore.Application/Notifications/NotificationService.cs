@@ -6,8 +6,7 @@ namespace NexusCore.Application.Notifications;
 
 public class NotificationService(
     ICurrentUserService currentUser,
-    IAppNotificationRepository notifications,
-    INotificationPublisher publisher) : INotificationService
+    IAppNotificationRepository notifications) : INotificationService
 {
     public async Task<IReadOnlyList<NotificationResponse>> ListAsync(CancellationToken cancellationToken = default)
     {
@@ -55,8 +54,6 @@ public class NotificationService(
         string title,
         string body,
         string? linkPath,
-        string? recipientEmail,
-        string? emailSubject,
         CancellationToken cancellationToken = default)
     {
         await notifications.AddAsync(new AppNotification
@@ -71,16 +68,6 @@ public class NotificationService(
             CreatedAtUtc = DateTime.UtcNow
         }, cancellationToken);
         await notifications.SaveChangesAsync(cancellationToken);
-
-        if (!string.IsNullOrWhiteSpace(recipientEmail))
-        {
-            await publisher.PublishAsync(new HrEventPayload(
-                eventType,
-                recipientEmail,
-                emailSubject ?? title,
-                body,
-                new { userId, linkPath }), cancellationToken);
-        }
     }
 
     private static NotificationResponse Map(AppNotification n) =>

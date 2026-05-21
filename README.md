@@ -1,8 +1,8 @@
 # HR-Lite
 
-Intranet HR-lite: React (TypeScript, shadcn/ui) + YARP Gateway + ASP.NET Core API + PostgreSQL + **n8n** (อีเมลแจ้งเตือน).
+Intranet HR-lite: React (TypeScript, shadcn/ui) + YARP Gateway + ASP.NET Core API + PostgreSQL.
 
-ฟีเจอร์หลัก: โปรไฟล์, ลา/โควต้า/ปฏิทิน, OT, ลงเวลา, สลิปเงินเดือน, เบิกค่าใช้จ่าย, onboarding, ประเมินผล, ประกาศ HR, รายงาน CSV, แจ้งเตือนในแอป + อีเมลผ่าน n8n.
+ฟีเจอร์หลัก: โปรไฟล์, ลา/โควต้า/ปฏิทิน, OT, ลงเวลา, สลิปเงินเดือน, เบิกค่าใช้จ่าย, onboarding, ประเมินผล, ประกาศ HR, รายงาน CSV, แจ้งเตือนในแอป (กระดิ่งบนหน้าเว็บ).
 
 ## Quick start
 
@@ -13,7 +13,17 @@ make dev    # starts PostgreSQL (Docker) + backend + gateway + frontend
 
 Open http://localhost:5173
 
-Demo logins (password `password123`): `employee`, `manager`, `admin`
+Demo logins (password `password123`):
+
+| Username | Role | อีเมลตัวอย่าง |
+|----------|------|----------------|
+| `admin` | Hr | admin@hr-lite.local |
+| `mgr.eng` | Manager (Engineering) | wichai.j@hr-lite.local |
+| `mgr.sales` | Manager (Sales) | suda.r@hr-lite.local |
+| `mgr.hr` | Manager (HR) | prapa.m@hr-lite.local |
+| `emp001` … `emp030` | Employee | somchai.j@hr-lite.local ฯลฯ |
+
+ระบบ seed พนักงาน mock **30 คน** (+ admin) อัตโนมัติตอน start API — รายชื่อเต็มใน `src/NexusCore.Infrastructure/Persistence/SeedData/MockEmployeeSeed.cs`
 
 ## Docker (practice deploy locally)
 
@@ -24,9 +34,7 @@ make docker-up
 
 Open http://localhost:8081
 
-Stack: `postgres` + `n8n` + `backend-service` + `gateway-service` + `frontend-service`
-
-- n8n UI: http://localhost:5678 — ดู [docs/n8n/README.md](./docs/n8n/README.md)
+Stack: `postgres` + `backend-service` + `gateway-service` + `frontend-service`
 
 ## PostgreSQL only (optional)
 
