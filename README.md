@@ -1,6 +1,8 @@
 # HR-Lite
 
-Intranet HR-lite: React (TypeScript, shadcn/ui) + YARP Gateway + ASP.NET Core API — โปรไฟล์พนักงาน, คำขอลา, workflow อนุมัติ, PostgreSQL.
+Intranet HR-lite: React (TypeScript, shadcn/ui) + YARP Gateway + ASP.NET Core API + PostgreSQL + **n8n** (อีเมลแจ้งเตือน).
+
+ฟีเจอร์หลัก: โปรไฟล์, ลา/โควต้า/ปฏิทิน, OT, ลงเวลา, สลิปเงินเดือน, เบิกค่าใช้จ่าย, onboarding, ประเมินผล, ประกาศ HR, รายงาน CSV, แจ้งเตือนในแอป + อีเมลผ่าน n8n.
 
 ## Quick start
 
@@ -22,7 +24,9 @@ make docker-up
 
 Open http://localhost:8081
 
-Stack: `postgres` + `backend-service` + `gateway-service` + `frontend-service`
+Stack: `postgres` + `n8n` + `backend-service` + `gateway-service` + `frontend-service`
+
+- n8n UI: http://localhost:5678 — ดู [docs/n8n/README.md](./docs/n8n/README.md)
 
 ## PostgreSQL only (optional)
 

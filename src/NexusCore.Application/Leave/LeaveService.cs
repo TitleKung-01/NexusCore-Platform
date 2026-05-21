@@ -1,4 +1,5 @@
 using NexusCore.Application.Common;
+using NexusCore.Application.Notifications;
 using NexusCore.Domain.Constants;
 using NexusCore.Domain.Entities;
 using NexusCore.Domain.Enums;
@@ -9,7 +10,12 @@ namespace NexusCore.Application.Leave;
 public class LeaveService(
     ICurrentUserService currentUser,
     ILeaveRequestRepository leaveRequests,
-    ILeaveTypeRepository leaveTypes) : ILeaveService
+    ILeaveTypeRepository leaveTypes,
+    ILeaveEntitlementRepository entitlements,
+    ILeaveAttachmentRepository attachments,
+    IEmployeeProfileRepository profiles,
+    IFileStorage fileStorage,
+    INotificationService notifications) : ILeaveService
 {
     public async Task<IReadOnlyList<LeaveRequestResponse>> ListAsync(string scope, CancellationToken cancellationToken = default)
     {
@@ -25,6 +31,15 @@ public class LeaveService(
                 list = await leaveRequests.GetPendingForManagerAsync(currentUser.UserId.Value, cancellationToken);
             else
                 return [];
+        }
+        else if (string.Equals(scope, "approval-history", StringComparison.OrdinalIgnoreCase))
+        {
+            Guid? managerFilter = currentUser.IsInAnyRole(UserRoles.Hr, UserRoles.Admin)
+                ? null
+                : currentUser.IsInRole(UserRoles.Manager) ? currentUser.UserId : null;
+            if (managerFilter is null && !currentUser.IsInAnyRole(UserRoles.Hr, UserRoles.Admin, UserRoles.Manager))
+                return [];
+            list = await leaveRequests.GetApprovalHistoryAsync(managerFilter, cancellationToken);
         }
         else
             list = await leaveRequests.GetByEmployeeIdAsync(currentUser.UserId.Value, cancellationToken);
@@ -90,9 +105,17 @@ public class LeaveService(
         if (await leaveRequests.HasOverlappingAsync(leave.EmployeeId, leave.StartDate, leave.EndDate, leave.Id, cancellationToken))
             return ServiceResult<LeaveRequestResponse>.Fail("Leave dates overlap with an existing request.", 409);
 
+        var entitlementError = await ValidateEntitlementAsync(leave, cancellationToken);
+        if (entitlementError is not null)
+            return ServiceResult<LeaveRequestResponse>.Fail(entitlementError, 400);
+
         leave.Status = LeaveStatus.Pending;
         leave.SubmittedAtUtc = DateTime.UtcNow;
         await leaveRequests.SaveChangesAsync(cancellationToken);
+
+        await NotifyApproversAsync(leave, "leave.submitted", "Leave request submitted",
+            $"{leave.Employee.FullName} submitted leave ({leave.StartDate:yyyy-MM-dd} – {leave.EndDate:yyyy-MM-dd}).",
+            $"/leave-requests/{leave.Id}", cancellationToken);
 
         var updated = await leaveRequests.FindByIdAsync(id, cancellationToken);
         return ServiceResult<LeaveRequestResponse>.Ok(Map(updated!));
@@ -114,6 +137,10 @@ public class LeaveService(
         leave.ManagerComment = request.Comment?.Trim();
         await leaveRequests.SaveChangesAsync(cancellationToken);
 
+        await NotifyEmployeeAsync(leave, "leave.approved", "Leave request approved",
+            $"Your leave ({leave.StartDate:yyyy-MM-dd} – {leave.EndDate:yyyy-MM-dd}) was approved.",
+            $"/leave-requests/{leave.Id}", cancellationToken);
+
         var updated = await leaveRequests.FindByIdAsync(id, cancellationToken);
         return ServiceResult<LeaveRequestResponse>.Ok(Map(updated!));
     }
@@ -134,6 +161,10 @@ public class LeaveService(
         leave.ManagerComment = request.Comment?.Trim();
         await leaveRequests.SaveChangesAsync(cancellationToken);
 
+        await NotifyEmployeeAsync(leave, "leave.rejected", "Leave request rejected",
+            $"Your leave ({leave.StartDate:yyyy-MM-dd} – {leave.EndDate:yyyy-MM-dd}) was rejected.",
+            $"/leave-requests/{leave.Id}", cancellationToken);
+
         var updated = await leaveRequests.FindByIdAsync(id, cancellationToken);
         return ServiceResult<LeaveRequestResponse>.Ok(Map(updated!));
     }
@@ -151,8 +182,167 @@ public class LeaveService(
         leave.Status = LeaveStatus.Cancelled;
         await leaveRequests.SaveChangesAsync(cancellationToken);
 
+        if (leave.Status == LeaveStatus.Cancelled)
+        {
+            await NotifyEmployeeAsync(leave, "leave.cancelled", "Leave request cancelled",
+                $"Your leave request was cancelled.", $"/leave-requests/{leave.Id}", cancellationToken);
+        }
+
         var updated = await leaveRequests.FindByIdAsync(id, cancellationToken);
         return ServiceResult<LeaveRequestResponse>.Ok(Map(updated!));
+    }
+
+    public async Task<IReadOnlyList<LeaveBalanceResponse>> GetBalancesAsync(int? year, Guid? employeeId, CancellationToken cancellationToken = default)
+    {
+        var targetYear = year ?? DateTime.UtcNow.Year;
+        var targetEmployee = employeeId ?? currentUser.UserId;
+        if (targetEmployee is null)
+            return [];
+
+        if (targetEmployee != currentUser.UserId && !currentUser.IsInAnyRole(UserRoles.Hr, UserRoles.Admin, UserRoles.Manager))
+            return [];
+
+        if (targetEmployee != currentUser.UserId && currentUser.IsInRole(UserRoles.Manager))
+        {
+            var profile = await profiles.FindByUserIdAsync(targetEmployee.Value, cancellationToken);
+            if (profile?.ManagerId != currentUser.UserId)
+                return [];
+        }
+
+        var list = await entitlements.ListForEmployeeAsync(targetEmployee.Value, targetYear, cancellationToken);
+        var results = new List<LeaveBalanceResponse>();
+        foreach (var e in list)
+        {
+            var used = await leaveRequests.SumApprovedDaysAsync(targetEmployee.Value, e.LeaveTypeId, targetYear, cancellationToken);
+            var pending = await SumPendingDaysAsync(targetEmployee.Value, e.LeaveTypeId, targetYear, cancellationToken);
+            results.Add(new LeaveBalanceResponse(
+                e.LeaveTypeId,
+                e.LeaveType.Name,
+                e.Year,
+                e.DaysAllowed,
+                used + pending,
+                e.DaysAllowed - used - pending));
+        }
+
+        return results;
+    }
+
+    public async Task<IReadOnlyList<LeaveCalendarEntryResponse>> GetCalendarAsync(string from, string to, Guid? departmentId, CancellationToken cancellationToken = default)
+    {
+        if (!DateOnly.TryParse(from, out var fromDate) || !DateOnly.TryParse(to, out var toDate))
+            return [];
+
+        if (!currentUser.IsInAnyRole(UserRoles.Hr, UserRoles.Admin, UserRoles.Manager))
+            departmentId = null;
+
+        var list = await leaveRequests.GetCalendarAsync(fromDate, toDate, departmentId, cancellationToken);
+        return list.Select(l => new LeaveCalendarEntryResponse(
+            l.Id,
+            l.EmployeeId,
+            l.Employee.FullName,
+            l.LeaveType.Name,
+            l.StartDate.ToString("yyyy-MM-dd"),
+            l.EndDate.ToString("yyyy-MM-dd"),
+            l.Status.ToString())).ToList();
+    }
+
+    public async Task<ServiceResult<LeaveAttachmentResponse>> UploadAttachmentAsync(Guid leaveRequestId, string fileName, Stream content, CancellationToken cancellationToken = default)
+    {
+        var leave = await leaveRequests.FindByIdAsync(leaveRequestId, cancellationToken);
+        if (leave is null)
+            return ServiceResult<LeaveAttachmentResponse>.Fail("Leave request not found.", 404);
+        if (!IsOwner(leave) && !currentUser.IsInAnyRole(UserRoles.Hr, UserRoles.Admin))
+            return ServiceResult<LeaveAttachmentResponse>.Fail("Forbidden.", 403);
+
+        var stored = await fileStorage.SaveAsync("leave-attachments", fileName, content, cancellationToken);
+        var attachment = new LeaveAttachment
+        {
+            Id = Guid.NewGuid(),
+            LeaveRequestId = leaveRequestId,
+            FileName = Path.GetFileName(fileName),
+            StoragePath = stored.StoragePath,
+            ContentType = stored.ContentType,
+            SizeBytes = stored.SizeBytes,
+            UploadedAtUtc = DateTime.UtcNow
+        };
+        await attachments.AddAsync(attachment, cancellationToken);
+        await attachments.SaveChangesAsync(cancellationToken);
+        return ServiceResult<LeaveAttachmentResponse>.Ok(MapAttachment(attachment));
+    }
+
+    public async Task<(Stream Stream, string ContentType, string FileName)?> DownloadAttachmentAsync(Guid attachmentId, CancellationToken cancellationToken = default)
+    {
+        var attachment = await attachments.FindByIdAsync(attachmentId, cancellationToken);
+        if (attachment is null)
+            return null;
+
+        var leave = await leaveRequests.FindByIdAsync(attachment.LeaveRequestId, cancellationToken);
+        if (leave is null || !CanView(leave))
+            return null;
+
+        var stream = await fileStorage.OpenReadAsync(attachment.StoragePath, cancellationToken);
+        if (stream is null)
+            return null;
+
+        return (stream, attachment.ContentType, attachment.FileName);
+    }
+
+    public async Task<IReadOnlyList<LeaveAttachmentResponse>> ListAttachmentsAsync(Guid leaveRequestId, CancellationToken cancellationToken = default)
+    {
+        var leave = await leaveRequests.FindByIdAsync(leaveRequestId, cancellationToken);
+        if (leave is null || !CanView(leave))
+            return [];
+
+        var list = await attachments.ListByLeaveRequestIdAsync(leaveRequestId, cancellationToken);
+        return list.Select(MapAttachment).ToList();
+    }
+
+    private async Task<string?> ValidateEntitlementAsync(LeaveRequest leave, CancellationToken cancellationToken)
+    {
+        var year = leave.StartDate.Year;
+        var entitlement = await entitlements.GetAsync(leave.EmployeeId, leave.LeaveTypeId, year, cancellationToken);
+        if (entitlement is null)
+            return "No leave entitlement configured for this leave type and year.";
+
+        var requestedDays = LeaveDayCalculator.CountInclusiveDays(leave.StartDate, leave.EndDate);
+        var used = await leaveRequests.SumApprovedDaysAsync(leave.EmployeeId, leave.LeaveTypeId, year, cancellationToken);
+        var pending = await SumPendingDaysAsync(leave.EmployeeId, leave.LeaveTypeId, year, cancellationToken);
+        if (used + pending + requestedDays > entitlement.DaysAllowed)
+            return $"Insufficient leave balance. Remaining: {entitlement.DaysAllowed - used - pending} day(s).";
+
+        return null;
+    }
+
+    private async Task<decimal> SumPendingDaysAsync(Guid employeeId, Guid leaveTypeId, int year, CancellationToken cancellationToken)
+    {
+        var pending = await leaveRequests.GetByEmployeeIdAsync(employeeId, cancellationToken);
+        decimal total = 0;
+        foreach (var l in pending.Where(l => l.LeaveTypeId == leaveTypeId && l.Status == LeaveStatus.Pending && (l.StartDate.Year == year || l.EndDate.Year == year)))
+            total += LeaveDayCalculator.CountInclusiveDays(l.StartDate, l.EndDate);
+        return total;
+    }
+
+    private async Task NotifyApproversAsync(LeaveRequest leave, string eventType, string title, string body, string linkPath, CancellationToken cancellationToken)
+    {
+        if (leave.Employee.ManagerId is Guid managerId)
+        {
+            var manager = await profiles.FindByUserIdAsync(managerId, cancellationToken);
+            if (manager is not null)
+            {
+                await notifications.NotifyUserAsync(managerId, eventType, title, body, linkPath,
+                    manager.Email, title, cancellationToken);
+            }
+        }
+    }
+
+    private async Task NotifyEmployeeAsync(LeaveRequest leave, string eventType, string title, string body, string linkPath, CancellationToken cancellationToken)
+    {
+        var employee = leave.Employee ?? await profiles.FindByUserIdAsync(leave.EmployeeId, cancellationToken);
+        if (employee is null)
+            return;
+
+        await notifications.NotifyUserAsync(leave.EmployeeId, eventType, title, body, linkPath,
+            employee.Email, title, cancellationToken);
     }
 
     private bool IsOwner(LeaveRequest leave) =>
@@ -196,4 +386,7 @@ public class LeaveService(
             l.SubmittedAtUtc?.ToString("o"),
             l.DecidedAtUtc?.ToString("o"),
             l.ManagerComment);
+
+    private static LeaveAttachmentResponse MapAttachment(LeaveAttachment a) =>
+        new(a.Id, a.LeaveRequestId, a.FileName, a.ContentType, a.SizeBytes, a.UploadedAtUtc.ToString("o"));
 }

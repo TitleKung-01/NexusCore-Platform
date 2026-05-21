@@ -26,7 +26,10 @@ public record EmployeeListItem(
 public record UpdateEmployeeRequest(
     Guid? DepartmentId,
     Guid? ManagerId,
-    string? Role);
+    string? Role,
+    string? FullName,
+    string? Email,
+    bool? IsActive);
 
 public record DepartmentResponse(Guid Id, string Name, string Code);
 

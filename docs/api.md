@@ -1,12 +1,6 @@
 # REST API (ASP.NET Core)
 
-Backend อยู่ที่ `src/NexusCore.Api/` (Clean Architecture) — เรียกจาก React ผ่าน **Gateway** (`/api/...`)
-
-## Architecture
-
-```text
-React (Axios + JWT) → Gateway :5000 → Backend :5100 → PostgreSQL
-```
+Backend: `src/NexusCore.Api/` — React เรียกผ่าน Gateway `http://localhost:5000`
 
 ## Roles
 
@@ -14,71 +8,85 @@ React (Axios + JWT) → Gateway :5000 → Backend :5100 → PostgreSQL
 
 ## Seed users (password: `password123`)
 
-| Username | Role | หมายเหตุ |
-|----------|------|----------|
-| admin | Hr | อนุมัติได้ทุกคำขอ |
-| manager | Manager | อนุมัติลูกทีม (employee) |
-| employee | Employee | ยื่นลา |
+| Username | Role |
+|----------|------|
+| admin | Hr |
+| manager | Manager |
+| employee | Employee |
 
-## Endpoints
-
-### Auth
-
-| Method | Path | Auth | คำอธิบาย |
-|--------|------|------|----------|
-| POST | `/api/auth/login` | — | `{ username, password }` → JWT |
-
-### Profile
-
-| Method | Path | Auth | คำอธิบาย |
-|--------|------|------|----------|
-| GET | `/api/me` | Bearer | โปรไฟล์ + role |
-| PUT | `/api/me` | Bearer | แก้ fullName, email, phone |
-
-### Reference data
+## Auth
 
 | Method | Path | Auth |
 |--------|------|------|
-| GET | `/api/departments` | Bearer |
-| GET | `/api/leave-types` | Bearer |
+| POST | `/api/auth/login` | — |
+| POST | `/api/auth/change-password` | Bearer |
 
-### Leave requests (workflow)
+## Profile & reference
+
+| Method | Path |
+|--------|------|
+| GET/PUT | `/api/me` |
+| GET | `/api/departments`, `/api/leave-types` |
+| GET | `/api/leave-balances` |
+
+## Notifications
+
+| Method | Path |
+|--------|------|
+| GET | `/api/notifications` |
+| GET | `/api/notifications/unread-count` |
+| POST | `/api/notifications/{id}/read` |
+| POST | `/api/notifications/read-all` |
+
+## Leave requests
 
 สถานะ: `Draft` → `Pending` → `Approved` / `Rejected` / `Cancelled`
 
-| Method | Path | คำอธิบาย |
-|--------|------|----------|
-| GET | `/api/leave-requests?scope=mine` | คำขอของตัวเอง |
-| GET | `/api/leave-requests?scope=pending-approval` | รออนุมัติ (Manager/Hr) |
-| GET | `/api/leave-requests/{id}` | รายละเอียด |
-| POST | `/api/leave-requests` | สร้าง (Draft) |
-| POST | `/api/leave-requests/{id}/submit` | ส่งอนุมัติ |
-| POST | `/api/leave-requests/{id}/approve` | อนุมัติ |
-| POST | `/api/leave-requests/{id}/reject` | ปฏิเสธ + comment |
-| POST | `/api/leave-requests/{id}/cancel` | ยกเลิก (owner) |
+| Method | Path |
+|--------|------|
+| GET | `/api/leave-requests?scope=mine\|pending-approval\|approval-history` |
+| GET | `/api/leave-requests/calendar?from&to&departmentId` |
+| GET/POST | `/api/leave-requests`, `/{id}`, `/{id}/submit`, `approve`, `reject`, `cancel` |
+| GET/POST | `/api/leave-requests/{id}/attachments` |
+| GET | `/api/leave-requests/attachments/{id}/download` |
 
-### Users / HR
+## Overtime & expenses
 
-| Method | Path | Auth |
-|--------|------|------|
-| GET | `/api/users` | Bearer |
-| POST | `/api/users` | Admin |
-| PUT | `/api/users/{id}` | Hr, Admin |
-| DELETE | `/api/users/{id}` | Admin |
-| GET | `/api/employees` | Hr, Admin |
-| PUT | `/api/employees/{userId}` | Hr, Admin |
+Workflow คล้ายลา — `api/overtime-requests`, `api/expense-claims`
 
-### Health
+## Attendance
 
-| GET | `/health` | — |
+| Method | Path |
+|--------|------|
+| POST | `/api/attendance/check-in`, `/check-out` |
+| GET | `/api/attendance?scope=mine\|team&from&to` |
+
+## HR (Hr/Admin)
+
+| Method | Path |
+|--------|------|
+| GET/PUT | `/api/employees` |
+| GET | `/api/employee-transfers` |
+| GET | `/api/reports/leave-summary?year` (CSV) |
+| CRUD | `/api/holidays` |
+| POST | `/api/payslips` (upload PDF) |
+| CRUD | `/api/announcements` |
+| CRUD | `/api/onboarding/templates`, assign tasks |
+| CRUD | `/api/reviews/cycles`, reviews |
+
+## Payslips (employee)
+
+| GET | `/api/payslips?scope=mine` |
+
+## Email (n8n)
+
+API ส่ง webhook ไป n8n — ไม่ส่ง SMTP เอง. ดู [docs/n8n/README.md](./n8n/README.md)
 
 ## Database
 
-PostgreSQL — `make db-up` แล้ว `dotnet ef database update` (หรือ migrate อัตโนมัติตอน start API)
-
 ```bash
-dotnet ef migrations add <Name> \
-  --project src/NexusCore.Infrastructure \
-  --startup-project src/NexusCore.Api \
-  --output-dir Persistence/Migrations
+make db-up
+dotnet ef database update --project src/NexusCore.Infrastructure --startup-project src/NexusCore.Api
 ```
+
+Migration ล่าสุด: `AddHrPlatformFeatures`

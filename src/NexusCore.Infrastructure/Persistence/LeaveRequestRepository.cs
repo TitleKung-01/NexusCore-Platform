@@ -41,6 +41,43 @@ public class LeaveRequestRepository(AppDbContext db) : ILeaveRequestRepository
             .OrderBy(l => l.SubmittedAtUtc)
             .ToListAsync(cancellationToken);
 
+    public async Task<IReadOnlyList<LeaveRequest>> GetCalendarAsync(DateOnly from, DateOnly to, Guid? departmentId, CancellationToken cancellationToken = default)
+    {
+        var query = WithIncludes()
+            .Where(l => l.Status == LeaveStatus.Approved || l.Status == LeaveStatus.Pending)
+            .Where(l => l.StartDate <= to && l.EndDate >= from);
+
+        if (departmentId.HasValue)
+            query = query.Where(l => l.Employee.DepartmentId == departmentId.Value);
+
+        return await query.OrderBy(l => l.StartDate).ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<LeaveRequest>> GetApprovalHistoryAsync(Guid? managerId, CancellationToken cancellationToken = default)
+    {
+        var query = WithIncludes()
+            .Where(l => l.Status == LeaveStatus.Approved || l.Status == LeaveStatus.Rejected);
+
+        if (managerId.HasValue)
+            query = query.Where(l => l.Employee.ManagerId == managerId.Value);
+
+        return await query.OrderByDescending(l => l.DecidedAtUtc).ToListAsync(cancellationToken);
+    }
+
+    public async Task<decimal> SumApprovedDaysAsync(Guid employeeId, Guid leaveTypeId, int year, CancellationToken cancellationToken = default)
+    {
+        var approved = await db.LeaveRequests
+            .AsNoTracking()
+            .Where(l => l.EmployeeId == employeeId && l.LeaveTypeId == leaveTypeId && l.Status == LeaveStatus.Approved)
+            .Where(l => l.StartDate.Year == year || l.EndDate.Year == year)
+            .ToListAsync(cancellationToken);
+
+        decimal total = 0;
+        foreach (var l in approved)
+            total += l.EndDate.DayNumber - l.StartDate.DayNumber + 1;
+        return total;
+    }
+
     public Task<bool> HasOverlappingAsync(Guid employeeId, DateOnly start, DateOnly end, Guid? excludeId, CancellationToken cancellationToken = default)
     {
         var query = db.LeaveRequests

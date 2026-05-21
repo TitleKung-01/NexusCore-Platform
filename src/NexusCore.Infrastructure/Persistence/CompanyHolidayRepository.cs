@@ -1,0 +1,35 @@
+using Microsoft.EntityFrameworkCore;
+using NexusCore.Domain.Entities;
+using NexusCore.Domain.Interfaces;
+
+namespace NexusCore.Infrastructure.Persistence;
+
+public class CompanyHolidayRepository(AppDbContext db) : ICompanyHolidayRepository
+{
+    public async Task<IReadOnlyList<CompanyHoliday>> ListAsync(int? year, CancellationToken cancellationToken = default)
+    {
+        var query = db.CompanyHolidays.AsNoTracking().AsQueryable();
+        if (year.HasValue)
+        {
+            var start = new DateOnly(year.Value, 1, 1);
+            var end = new DateOnly(year.Value, 12, 31);
+            query = query.Where(h => h.Date >= start && h.Date <= end);
+        }
+
+        return await query.OrderBy(h => h.Date).ToListAsync(cancellationToken);
+    }
+
+    public Task<CompanyHoliday?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
+        db.CompanyHolidays.AsNoTracking().FirstOrDefaultAsync(h => h.Id == id, cancellationToken);
+
+    public Task<CompanyHoliday?> FindByIdTrackedAsync(Guid id, CancellationToken cancellationToken = default) =>
+        db.CompanyHolidays.FirstOrDefaultAsync(h => h.Id == id, cancellationToken);
+
+    public async Task AddAsync(CompanyHoliday holiday, CancellationToken cancellationToken = default) =>
+        await db.CompanyHolidays.AddAsync(holiday, cancellationToken);
+
+    public void Remove(CompanyHoliday holiday) => db.CompanyHolidays.Remove(holiday);
+
+    public Task SaveChangesAsync(CancellationToken cancellationToken = default) =>
+        db.SaveChangesAsync(cancellationToken);
+}

@@ -10,6 +10,7 @@
 | Backend (REST API) | `localhost:5100` | `backend-service` (internal) |
 | Gateway (YARP) | `localhost:5000` | `gateway-service` :5000 |
 | Frontend | Vite `localhost:5173` | Nginx `localhost:8081` |
+| n8n (webhooks / email) | `docker compose up n8n -d` → `localhost:5678` | `n8n` container :5678 |
 
 ## Gateway → Backend
 

@@ -6,7 +6,7 @@ using NexusCore.Domain.Constants;
 namespace NexusCore.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/employees")]
 [Authorize(Roles = $"{UserRoles.Hr},{UserRoles.Admin}")]
 public class EmployeesController(IEmployeeService employeeService) : ControllerBase
 {

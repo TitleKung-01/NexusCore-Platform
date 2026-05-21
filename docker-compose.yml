@@ -16,6 +16,18 @@ services:
       timeout: 5s
       retries: 5
 
+  n8n:
+    image: n8nio/n8n:latest
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - WEBHOOK_URL=http://localhost:5678/
+    volumes:
+      - n8n-data:/home/node/.n8n
+
   backend-service:
     build:
       context: ./src
@@ -25,9 +37,15 @@ services:
       - ASPNETCORE_URLS=http://+:5100
       - Jwt__Key=DockerLocalPracticeKey-32CharsMinForHmacSha256!
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=${POSTGRES_DB:-nexuscore};Username=${POSTGRES_USER:-nexuscore};Password=${POSTGRES_PASSWORD:-nexuscore_dev}
+      - N8n__WebhookUrl=http://n8n:5678/webhook/hr-events
+      - FileStorage__RootPath=/app/uploads
+    volumes:
+      - uploads-data:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
+      n8n:
+        condition: service_started
     # Internal only — traffic enters via gateway-service
 
   gateway-service:
@@ -53,3 +71,5 @@ services:
 
 volumes:
   postgres-data:
+  n8n-data:
+  uploads-data:

@@ -6,7 +6,7 @@ using NexusCore.Application.Services;
 namespace NexusCore.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/auth")]
 public class AuthController(IAuthService authService) : ControllerBase
 {
     [HttpPost("login")]
@@ -21,4 +21,13 @@ public class AuthController(IAuthService authService) : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("change-password")]
+    [Authorize]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request, CancellationToken cancellationToken)
+    {
+        var result = await authService.ChangePasswordAsync(request, cancellationToken);
+        if (!result.Success)
+            return StatusCode(result.StatusCode, new { Message = result.Error });
+        return NoContent();
+    }
 }

@@ -125,6 +125,57 @@ public static class DbInitializer
             });
         }
 
+        await SeedLeaveEntitlementsAsync(db);
+        await SeedHolidaysAsync(db);
         await db.SaveChangesAsync();
+    }
+
+    private static async Task SeedLeaveEntitlementsAsync(AppDbContext db)
+    {
+        if (await db.LeaveEntitlements.AnyAsync())
+            return;
+
+        var year = DateTime.UtcNow.Year;
+        var leaveTypes = await db.LeaveTypes.ToListAsync();
+        var profiles = await db.EmployeeProfiles.ToListAsync();
+        if (leaveTypes.Count == 0 || profiles.Count == 0)
+            return;
+
+        foreach (var profile in profiles)
+        {
+            foreach (var leaveType in leaveTypes)
+            {
+                var days = leaveType.Code switch
+                {
+                    "ANNUAL" => 10m,
+                    "SICK" => 30m,
+                    "PERSONAL" => 5m,
+                    _ => 5m
+                };
+
+                db.LeaveEntitlements.Add(new LeaveEntitlement
+                {
+                    Id = Guid.NewGuid(),
+                    EmployeeId = profile.UserId,
+                    LeaveTypeId = leaveType.Id,
+                    Year = year,
+                    DaysAllowed = days
+                });
+            }
+        }
+    }
+
+    private static async Task SeedHolidaysAsync(AppDbContext db)
+    {
+        if (await db.CompanyHolidays.AnyAsync())
+            return;
+
+        var year = DateTime.UtcNow.Year;
+        db.CompanyHolidays.AddRange(
+            new CompanyHoliday { Id = Guid.NewGuid(), Date = new DateOnly(year, 1, 1), Name = "วันขึ้นปีใหม่" },
+            new CompanyHoliday { Id = Guid.NewGuid(), Date = new DateOnly(year, 4, 13), Name = "วันสงกรานต์" },
+            new CompanyHoliday { Id = Guid.NewGuid(), Date = new DateOnly(year, 12, 5), Name = "วันพ่อแห่งชาติ" },
+            new CompanyHoliday { Id = Guid.NewGuid(), Date = new DateOnly(year, 12, 10), Name = "วันรัฐธรรมนูญ" },
+            new CompanyHoliday { Id = Guid.NewGuid(), Date = new DateOnly(year, 12, 31), Name = "วันสิ้นปี" });
     }
 }

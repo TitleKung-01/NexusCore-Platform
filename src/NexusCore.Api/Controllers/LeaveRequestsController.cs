@@ -73,4 +73,42 @@ public class LeaveRequestsController(ILeaveService leaveService) : ControllerBas
             return StatusCode(result.StatusCode, new { Message = result.Error });
         return Ok(result.Data);
     }
+
+    [HttpGet("calendar")]
+    public async Task<IActionResult> Calendar([FromQuery] string from, [FromQuery] string to, [FromQuery] Guid? departmentId, CancellationToken cancellationToken)
+    {
+        var list = await leaveService.GetCalendarAsync(from, to, departmentId, cancellationToken);
+        return Ok(list);
+    }
+
+    [HttpGet("{id:guid}/attachments")]
+    public async Task<IActionResult> ListAttachments(Guid id, CancellationToken cancellationToken)
+    {
+        var list = await leaveService.ListAttachmentsAsync(id, cancellationToken);
+        return Ok(list);
+    }
+
+    [HttpPost("{id:guid}/attachments")]
+    [RequestSizeLimit(10 * 1024 * 1024)]
+    public async Task<IActionResult> UploadAttachment(Guid id, IFormFile file, CancellationToken cancellationToken)
+    {
+        if (file.Length == 0)
+            return BadRequest(new { Message = "File is required." });
+
+        await using var stream = file.OpenReadStream();
+        var result = await leaveService.UploadAttachmentAsync(id, file.FileName, stream, cancellationToken);
+        if (!result.Success)
+            return StatusCode(result.StatusCode, new { Message = result.Error });
+        return Ok(result.Data);
+    }
+
+    [HttpGet("attachments/{attachmentId:guid}/download")]
+    public async Task<IActionResult> DownloadAttachment(Guid attachmentId, CancellationToken cancellationToken)
+    {
+        var file = await leaveService.DownloadAttachmentAsync(attachmentId, cancellationToken);
+        if (file is null)
+            return NotFound();
+        return File(file.Value.Stream, file.Value.ContentType, file.Value.FileName);
+    }
 }
+

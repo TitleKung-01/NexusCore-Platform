@@ -10,7 +10,8 @@ public class EmployeeService(
     IEmployeeProfileRepository profiles,
     IDepartmentRepository departments,
     ILeaveTypeRepository leaveTypes,
-    IUserRepository users) : IEmployeeService
+    IUserRepository users,
+    IEmployeeTransferRepository transfers) : IEmployeeService
 {
     public async Task<MeResponse?> GetMeAsync(CancellationToken cancellationToken = default)
     {
@@ -74,8 +75,29 @@ public class EmployeeService(
             var dept = await departments.FindByIdAsync(request.DepartmentId.Value, cancellationToken);
             if (dept is null)
                 return ServiceResult<EmployeeListItem>.Fail("Department not found.", 404);
+
+            if (profile.DepartmentId != request.DepartmentId.Value)
+            {
+                await transfers.AddAsync(new EmployeeTransfer
+                {
+                    Id = Guid.NewGuid(),
+                    EmployeeId = userId,
+                    FromDepartmentId = profile.DepartmentId,
+                    ToDepartmentId = request.DepartmentId.Value,
+                    EffectiveDate = DateOnly.FromDateTime(DateTime.UtcNow),
+                    Note = "Department updated by HR",
+                    CreatedAtUtc = DateTime.UtcNow
+                }, cancellationToken);
+            }
+
             profile.DepartmentId = request.DepartmentId.Value;
         }
+
+        if (!string.IsNullOrWhiteSpace(request.FullName))
+            profile.FullName = request.FullName.Trim();
+
+        if (!string.IsNullOrWhiteSpace(request.Email))
+            profile.Email = request.Email.Trim();
 
         if (request.ManagerId.HasValue)
         {
@@ -89,17 +111,22 @@ public class EmployeeService(
         else if (request.ManagerId == Guid.Empty)
             profile.ManagerId = null;
 
+        var user = await users.FindByIdTrackedAsync(userId, cancellationToken);
+        if (user is null)
+            return ServiceResult<EmployeeListItem>.Fail("User not found.", 404);
+
         if (!string.IsNullOrWhiteSpace(request.Role))
         {
             if (!UserRoles.All.Contains(request.Role, StringComparer.OrdinalIgnoreCase))
                 return ServiceResult<EmployeeListItem>.Fail("Invalid role.", 400);
-            var user = await users.FindByIdTrackedAsync(userId, cancellationToken);
-            if (user is null)
-                return ServiceResult<EmployeeListItem>.Fail("User not found.", 404);
             user.Role = request.Role;
         }
 
+        if (request.IsActive.HasValue)
+            user.IsActive = request.IsActive.Value;
+
         await profiles.SaveChangesAsync(cancellationToken);
+        await transfers.SaveChangesAsync(cancellationToken);
         await users.SaveChangesAsync(cancellationToken);
 
         var updated = await profiles.FindByUserIdAsync(userId, cancellationToken);
