@@ -70,7 +70,7 @@ export function AppShell() {
     <div className="flex min-h-svh bg-background">
       <aside className="w-64 border-r border-blue-500/10 bg-card flex flex-col shrink-0 shadow-lg shadow-blue-500/[0.01] relative z-20">
         {/* Sidebar Header with Brand */}
-        <div className="p-4 pt-5 pb-5 flex items-center justify-between gap-2 border-b border-blue-500/5">
+        <div className="p-4 pt-5 pb-5 flex items-center justify-between gap-2 border-b border-blue-500/5 overflow-visible">
           <Link to="/" className="flex items-center gap-2.5 group">
             <div className="size-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
               <Building2 className="size-4.5" />

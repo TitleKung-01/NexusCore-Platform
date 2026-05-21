@@ -38,11 +38,15 @@ export function AnnouncementsPage() {
 
   useEffect(load, [])
 
-  const openCreate = () => {
+  const resetForm = () => {
     setEditId(null)
     setTitle('')
     setBody('')
     setIsActive(true)
+  }
+
+  const openCreate = () => {
+    resetForm()
     setOpen(true)
   }
 
@@ -52,6 +56,11 @@ export function AnnouncementsPage() {
     setBody(a.body)
     setIsActive(a.isActive)
     setOpen(true)
+  }
+
+  const handleOpenChange = (next: boolean) => {
+    setOpen(next)
+    if (!next) resetForm()
   }
 
   const save = async () => {
@@ -64,6 +73,7 @@ export function AnnouncementsPage() {
         toast.success('เผยแพร่แล้ว')
       }
       setOpen(false)
+      resetForm()
       load()
     } catch (err) {
       toast.error(formatApiError(err, 'บันทึกไม่สำเร็จ'))
@@ -107,7 +117,7 @@ export function AnnouncementsPage() {
               a.isActive && 'ring-1 ring-blue-500/10'
             )}
           >
-            <CardHeader className="border-b border-border/40 pb-4 flex flex-row items-start justify-between gap-4">
+            <CardHeader className="border-b border-border/40 pb-4 flex flex-row items-start justify-between gap-4 space-y-0">
               <div className="flex gap-3 min-w-0">
                 <div className="size-10 rounded-xl bg-gradient-to-br from-blue-500/15 to-indigo-500/15 flex items-center justify-center shrink-0">
                   <Megaphone className="size-5 text-primary" />
@@ -129,7 +139,16 @@ export function AnnouncementsPage() {
                   </Badge>
                 )}
                 {isHr && (
-                  <Button size="sm" variant="outline" className="rounded-lg" onClick={() => openEdit(a)}>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="rounded-lg"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      openEdit(a)
+                    }}
+                  >
                     <Pencil className="size-3.5 mr-1" />
                     แก้ไข
                   </Button>
@@ -156,37 +175,54 @@ export function AnnouncementsPage() {
         )}
       </div>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="rounded-2xl">
-          <DialogHeader>
-            <DialogTitle>{editId ? 'แก้ไขประกาศ' : 'สร้างประกาศ'}</DialogTitle>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className="rounded-2xl border border-blue-500/10 shadow-2xl p-0">
+          <DialogHeader className="border-b border-border/40 pb-4 mb-0">
+            <DialogTitle className="text-lg font-bold pr-2">
+              {editId ? 'แก้ไขประกาศ' : 'สร้างประกาศ'}
+            </DialogTitle>
           </DialogHeader>
-          <div className="space-y-3">
+
+          <div className="space-y-4 -mt-2">
             <div className="space-y-2">
               <Label className="font-semibold">หัวข้อ</Label>
-              <Input value={title} onChange={(e) => setTitle(e.target.value)} required className="rounded-xl" />
+              <Input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+                className="rounded-xl"
+                placeholder="หัวข้อประกาศ"
+              />
             </div>
             <div className="space-y-2">
               <Label className="font-semibold">เนื้อหา</Label>
-              <Textarea value={body} onChange={(e) => setBody(e.target.value)} rows={5} required className="rounded-xl" />
+              <Textarea
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
+                rows={6}
+                required
+                className="rounded-xl min-h-[140px] resize-y"
+                placeholder="รายละเอียดประกาศ"
+              />
             </div>
             {editId && (
-              <label className="flex items-center gap-2 text-sm font-medium rounded-lg border p-3 cursor-pointer hover:bg-muted/50">
+              <label className="flex items-center gap-3 text-sm font-medium rounded-xl border border-border/60 p-3 cursor-pointer hover:bg-muted/50 transition-colors">
                 <input
                   type="checkbox"
                   checked={isActive}
                   onChange={(e) => setIsActive(e.target.checked)}
-                  className="size-4 accent-primary"
+                  className="size-4 shrink-0 accent-primary"
                 />
-                เปิดใช้งาน
+                <span>เปิดใช้งานประกาศนี้</span>
               </label>
             )}
           </div>
-          <DialogFooter>
-            <Button variant="outline" className="rounded-xl" onClick={() => setOpen(false)}>
+
+          <DialogFooter className="mt-0 pt-4">
+            <Button type="button" variant="outline" className="rounded-xl" onClick={() => handleOpenChange(false)}>
               ยกเลิก
             </Button>
-            <Button onClick={save} className="rounded-xl font-bold btn-premium">
+            <Button type="button" onClick={save} className="rounded-xl font-bold btn-premium">
               บันทึก
             </Button>
           </DialogFooter>
