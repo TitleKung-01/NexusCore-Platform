@@ -8,4 +8,6 @@ public class AttendanceRecord
     public DateOnly WorkDate { get; set; }
     public DateTime? CheckInUtc { get; set; }
     public DateTime? CheckOutUtc { get; set; }
+    /// <summary>สรุปงานวันนี้ (ไม่บังคับ) — มักกรอกตอนลงเวลาออก</summary>
+    public string? WorkSummary { get; set; }
 }

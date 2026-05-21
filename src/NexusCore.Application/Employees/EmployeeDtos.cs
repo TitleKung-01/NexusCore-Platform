@@ -10,7 +10,9 @@ public record MeResponse(
     Guid DepartmentId,
     string DepartmentName,
     Guid? ManagerId,
-    string? ManagerName);
+    string? ManagerName,
+    bool CanApprove,
+    bool IsHrAccess);
 
 public record UpdateMeRequest(string FullName, string Email, string? Phone);
 

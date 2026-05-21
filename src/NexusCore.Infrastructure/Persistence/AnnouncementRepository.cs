@@ -25,3 +25,4 @@ public class AnnouncementRepository(AppDbContext db) : IAnnouncementRepository
     public Task SaveChangesAsync(CancellationToken cancellationToken = default) =>
         db.SaveChangesAsync(cancellationToken);
 }
+

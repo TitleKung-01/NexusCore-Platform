@@ -16,3 +16,7 @@ public record EmployeeOnboardingTaskResponse(
 public record AssignOnboardingRequest(Guid TemplateId, Guid EmployeeId);
 
 public record CompleteOnboardingTaskRequest(bool IsCompleted);
+
+public record UpsertOnboardingTemplateTaskRequest(Guid? Id, string Title, int SortOrder);
+
+public record SaveOnboardingTemplateRequest(string Name, IReadOnlyList<UpsertOnboardingTemplateTaskRequest> Tasks);

@@ -111,6 +111,10 @@ namespace NexusCore.Infrastructure.Persistence.Migrations
                     b.Property<DateOnly>("WorkDate")
                         .HasColumnType("date");
 
+                    b.Property<string>("WorkSummary")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("EmployeeId", "WorkDate")
@@ -646,71 +650,36 @@ namespace NexusCore.Infrastructure.Persistence.Migrations
                     b.ToTable("Payslips");
                 });
 
-            modelBuilder.Entity("NexusCore.Domain.Entities.PerformanceReview", b =>
+            modelBuilder.Entity("NexusCore.Domain.Entities.RoleDefinition", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<bool>("CanApprove")
+                        .HasColumnType("boolean");
 
-                    b.Property<Guid>("CycleId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("Description")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
 
-                    b.Property<Guid>("EmployeeId")
-                        .HasColumnType("uuid");
+                    b.Property<bool>("IsBuiltIn")
+                        .HasColumnType("boolean");
 
-                    b.Property<string>("ManagerComment")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)");
-
-                    b.Property<Guid?>("ManagerId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int?>("ManagerScore")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("SelfComment")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)");
-
-                    b.Property<int?>("SelfScore")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EmployeeId");
-
-                    b.HasIndex("CycleId", "EmployeeId")
-                        .IsUnique();
-
-                    b.ToTable("PerformanceReviews");
-                });
-
-            modelBuilder.Entity("NexusCore.Domain.Entities.ReviewCycle", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateOnly>("EndDate")
-                        .HasColumnType("date");
-
-                    b.Property<bool>("IsOpen")
+                    b.Property<bool>("IsHrAccess")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<DateOnly>("StartDate")
-                        .HasColumnType("date");
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("ReviewCycles");
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("RoleDefinitions");
                 });
 
             modelBuilder.Entity("NexusCore.Domain.Entities.User", b =>
@@ -935,25 +904,6 @@ namespace NexusCore.Infrastructure.Persistence.Migrations
                         .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Employee");
-                });
-
-            modelBuilder.Entity("NexusCore.Domain.Entities.PerformanceReview", b =>
-                {
-                    b.HasOne("NexusCore.Domain.Entities.ReviewCycle", "Cycle")
-                        .WithMany()
-                        .HasForeignKey("CycleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("NexusCore.Domain.Entities.EmployeeProfile", "Employee")
-                        .WithMany()
-                        .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Cycle");
 
                     b.Navigation("Employee");
                 });

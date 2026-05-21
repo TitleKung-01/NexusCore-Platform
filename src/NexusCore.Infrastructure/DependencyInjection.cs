@@ -22,6 +22,7 @@ public static class DependencyInjection
 
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IDepartmentRepository, DepartmentRepository>();
+        services.AddScoped<IRoleDefinitionRepository, RoleDefinitionRepository>();
         services.AddScoped<ILeaveTypeRepository, LeaveTypeRepository>();
         services.AddScoped<IEmployeeProfileRepository, EmployeeProfileRepository>();
         services.AddScoped<ILeaveRequestRepository, LeaveRequestRepository>();
@@ -34,7 +35,6 @@ public static class DependencyInjection
         services.AddScoped<IEmployeeTransferRepository, EmployeeTransferRepository>();
         services.AddScoped<IAnnouncementRepository, AnnouncementRepository>();
         services.AddScoped<IOnboardingRepository, OnboardingRepository>();
-        services.AddScoped<IReviewRepository, ReviewRepository>();
         services.AddScoped<IExpenseRepository, ExpenseRepository>();
         services.AddScoped<IAppNotificationRepository, AppNotificationRepository>();
 

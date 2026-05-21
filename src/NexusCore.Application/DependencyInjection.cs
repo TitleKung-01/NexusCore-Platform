@@ -6,11 +6,11 @@ using NexusCore.Application.Expenses;
 using NexusCore.Application.Holidays;
 using NexusCore.Application.Leave;
 using NexusCore.Application.Notifications;
+using NexusCore.Application.Organization;
 using NexusCore.Application.Onboarding;
 using NexusCore.Application.Overtime;
 using NexusCore.Application.Payslips;
 using NexusCore.Application.Reports;
-using NexusCore.Application.Reviews;
 using NexusCore.Application.Services;
 using NexusCore.Application.Transfers;
 
@@ -33,7 +33,7 @@ public static class DependencyInjection
         services.AddScoped<ITransferService, TransferService>();
         services.AddScoped<IAnnouncementService, AnnouncementService>();
         services.AddScoped<IOnboardingService, OnboardingService>();
-        services.AddScoped<IReviewService, ReviewService>();
+        services.AddScoped<IOrganizationService, OrganizationService>();
         services.AddScoped<IExpenseService, ExpenseService>();
         return services;
     }

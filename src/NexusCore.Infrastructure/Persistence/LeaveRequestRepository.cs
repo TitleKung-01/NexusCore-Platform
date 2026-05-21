@@ -12,7 +12,11 @@ public class LeaveRequestRepository(AppDbContext db) : ILeaveRequestRepository
             .AsNoTracking()
             .Include(l => l.LeaveType)
             .Include(l => l.Employee)
-            .ThenInclude(e => e!.User);
+                .ThenInclude(e => e!.User)
+            .Include(l => l.Employee)
+                .ThenInclude(e => e!.Department)
+            .Include(l => l.Employee)
+                .ThenInclude(e => e!.Manager);
 
     public Task<LeaveRequest?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
         WithIncludes().FirstOrDefaultAsync(l => l.Id == id, cancellationToken);
@@ -20,6 +24,11 @@ public class LeaveRequestRepository(AppDbContext db) : ILeaveRequestRepository
     public Task<LeaveRequest?> FindByIdTrackedAsync(Guid id, CancellationToken cancellationToken = default) =>
         db.LeaveRequests
             .Include(l => l.Employee)
+                .ThenInclude(e => e!.User)
+            .Include(l => l.Employee)
+                .ThenInclude(e => e!.Department)
+            .Include(l => l.Employee)
+                .ThenInclude(e => e!.Manager)
             .Include(l => l.LeaveType)
             .FirstOrDefaultAsync(l => l.Id == id, cancellationToken);
 

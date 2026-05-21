@@ -1,48 +1,69 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --radius: 0.5rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
+  --radius: 0.75rem;
+  
+  /* Premium Corporate Blue & White Palette (OKLCH) */
+  --background: oklch(0.99 0.005 240);       /* Soft bluish-white */
+  --foreground: oklch(0.18 0.03 245);         /* Rich corporate navy */
+  
+  --card: oklch(1 0 0);                       /* Pure white */
+  --card-foreground: oklch(0.18 0.03 245);
+  
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
+  --popover-foreground: oklch(0.18 0.03 245);
+  
+  --primary: oklch(0.48 0.185 250);           /* Vibrant sapphire brand blue */
+  --primary-foreground: oklch(1 0 0);
+  
+  --secondary: oklch(0.95 0.02 245);          /* Ice blue */
+  --secondary-foreground: oklch(0.42 0.16 250);
+  
+  --muted: oklch(0.975 0.01 245);             /* Thin cool grey-blue */
+  --muted-foreground: oklch(0.50 0.03 245);   /* Cool steel grey */
+  
+  --accent: oklch(0.935 0.025 245);           /* Pale blue hover state */
+  --accent-foreground: oklch(0.42 0.16 250);
+  
+  --destructive: oklch(0.55 0.22 25);         /* Scarlet red */
+  --destructive-foreground: oklch(1 0 0);
+  
+  --border: oklch(0.92 0.015 245);            /* Subtle ice-blue border */
+  --input: oklch(0.92 0.015 245);
+  --ring: oklch(0.68 0.14 250);               /* Glow focus blue */
 }
 
 .dark {
-  --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.984 0.003 247.858);
-  --card: oklch(0.208 0.042 265.755);
-  --card-foreground: oklch(0.984 0.003 247.858);
-  --popover: oklch(0.208 0.042 265.755);
-  --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: oklch(0.929 0.013 255.508);
-  --primary-foreground: oklch(0.208 0.042 265.755);
-  --secondary: oklch(0.279 0.041 260.031);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: oklch(0.704 0.04 256.788);
-  --accent: oklch(0.279 0.041 260.031);
-  --accent-foreground: oklch(0.984 0.003 247.858);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.551 0.027 264.364);
+  --background: oklch(0.14 0.02 245);         /* Deep elegant tech navy */
+  --foreground: oklch(0.96 0.01 240);
+  
+  --card: oklch(0.18 0.025 245);              /* Slate-navy card */
+  --card-foreground: oklch(0.96 0.01 240);
+  
+  --popover: oklch(0.18 0.025 245);
+  --popover-foreground: oklch(0.96 0.01 240);
+  
+  --primary: oklch(0.62 0.17 245);            /* Lighter energetic electric blue */
+  --primary-foreground: oklch(0.14 0.02 245);
+  
+  --secondary: oklch(0.22 0.03 245);
+  --secondary-foreground: oklch(0.96 0.01 240);
+  
+  --muted: oklch(0.20 0.025 245);
+  --muted-foreground: oklch(0.70 0.02 245);
+  
+  --accent: oklch(0.24 0.035 245);
+  --accent-foreground: oklch(0.96 0.01 240);
+  
+  --destructive: oklch(0.60 0.18 25);
+  --destructive-foreground: oklch(1 0 0);
+  
+  --border: oklch(0.24 0.03 245);
+  --input: oklch(0.24 0.03 245);
+  --ring: oklch(0.62 0.17 245);
 }
 
 @theme inline {
@@ -72,12 +93,67 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring/30 transition-colors duration-200;
   }
   body {
     @apply bg-background text-foreground min-h-svh;
+    font-family: 'Inter', 'Sarabun', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   #root {
     @apply min-h-svh w-full max-w-none border-0 text-left;
   }
 }
+
+/* Beautiful frosted glass effect (Glassmorphism) */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+}
+
+.dark .glass-panel {
+  background: rgba(24, 28, 41, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Custom premium hover and animation effects */
+.btn-premium {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-premium:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(2, 91, 242, 0.15);
+}
+
+.btn-premium:active {
+  transform: translateY(0);
+}
+
+/* Modern pulsing glow light */
+.glow-effect {
+  position: relative;
+}
+.glow-effect::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 15px rgba(2, 91, 242, 0.4);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.glow-effect:hover::after {
+  opacity: 1;
+}
+

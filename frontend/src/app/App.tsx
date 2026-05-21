@@ -23,8 +23,6 @@ import { OvertimeListPage } from '@/features/overtime/OvertimeListPage'
 import { OvertimeNewPage } from '@/features/overtime/OvertimeNewPage'
 import { PayslipsPage } from '@/features/payslips/PayslipsPage'
 import { ProfilePage } from '@/features/profile/ProfilePage'
-import { ReviewsPage } from '@/features/reviews/ReviewsPage'
-
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { token, loading } = useAuth()
   if (!token) return <Navigate to="/login" replace />
@@ -74,7 +72,6 @@ export default function App() {
             <Route path="expenses/:id" element={<ExpenseDetailPage />} />
             <Route path="payslips" element={<PayslipsPage />} />
             <Route path="onboarding" element={<OnboardingPage />} />
-            <Route path="reviews" element={<ReviewsPage />} />
             <Route
               path="approvals"
               element={

@@ -370,11 +370,18 @@ public class LeaveService(
         return false;
     }
 
-    private static LeaveRequestResponse Map(LeaveRequest l) =>
-        new(
+    private static LeaveRequestResponse Map(LeaveRequest l)
+    {
+        var emp = RequestEmployeeFields.From(l.Employee);
+        return new(
             l.Id,
             l.EmployeeId,
             l.Employee.FullName,
+            emp.Username,
+            emp.Email,
+            emp.DepartmentName,
+            emp.Role,
+            emp.ManagerName,
             l.LeaveTypeId,
             l.LeaveType.Name,
             l.StartDate.ToString("yyyy-MM-dd"),
@@ -384,6 +391,7 @@ public class LeaveService(
             l.SubmittedAtUtc?.ToString("o"),
             l.DecidedAtUtc?.ToString("o"),
             l.ManagerComment);
+    }
 
     private static LeaveAttachmentResponse MapAttachment(LeaveAttachment a) =>
         new(a.Id, a.LeaveRequestId, a.FileName, a.ContentType, a.SizeBytes, a.UploadedAtUtc.ToString("o"));

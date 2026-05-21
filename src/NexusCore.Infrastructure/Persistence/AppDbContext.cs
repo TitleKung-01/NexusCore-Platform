@@ -18,6 +18,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<Department> Departments => Set<Department>();
 
+    public DbSet<RoleDefinition> RoleDefinitions => Set<RoleDefinition>();
+
     public DbSet<LeaveType> LeaveTypes => Set<LeaveType>();
 
     public DbSet<EmployeeProfile> EmployeeProfiles => Set<EmployeeProfile>();
@@ -47,10 +49,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<OnboardingTemplateTask> OnboardingTemplateTasks => Set<OnboardingTemplateTask>();
 
     public DbSet<EmployeeOnboardingTask> EmployeeOnboardingTasks => Set<EmployeeOnboardingTask>();
-
-    public DbSet<ReviewCycle> ReviewCycles => Set<ReviewCycle>();
-
-    public DbSet<PerformanceReview> PerformanceReviews => Set<PerformanceReview>();
 
     public DbSet<ExpenseClaim> ExpenseClaims => Set<ExpenseClaim>();
 
@@ -93,6 +91,22 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.Property(d => d.Name).HasMaxLength(128);
 
             entity.Property(d => d.Code).HasMaxLength(32);
+
+        });
+
+
+
+        modelBuilder.Entity<RoleDefinition>(entity =>
+
+        {
+
+            entity.HasKey(r => r.Id);
+
+            entity.HasIndex(r => r.Name).IsUnique();
+
+            entity.Property(r => r.Name).HasMaxLength(64);
+
+            entity.Property(r => r.Description).HasMaxLength(256);
 
         });
 
@@ -270,6 +284,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
             entity.HasIndex(a => new { a.EmployeeId, a.WorkDate }).IsUnique();
 
+            entity.Property(a => a.WorkSummary).HasMaxLength(2000);
+
         });
 
 
@@ -365,34 +381,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasKey(t => t.Id);
 
             entity.Property(t => t.Title).HasMaxLength(256);
-
-        });
-
-
-
-        modelBuilder.Entity<ReviewCycle>(entity =>
-
-        {
-
-            entity.HasKey(c => c.Id);
-
-            entity.Property(c => c.Name).HasMaxLength(128);
-
-        });
-
-
-
-        modelBuilder.Entity<PerformanceReview>(entity =>
-
-        {
-
-            entity.HasKey(r => r.Id);
-
-            entity.HasIndex(r => new { r.CycleId, r.EmployeeId }).IsUnique();
-
-            entity.Property(r => r.SelfComment).HasMaxLength(2000);
-
-            entity.Property(r => r.ManagerComment).HasMaxLength(2000);
 
         });
 

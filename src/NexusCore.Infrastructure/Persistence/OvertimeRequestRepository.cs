@@ -11,7 +11,11 @@ public class OvertimeRequestRepository(AppDbContext db) : IOvertimeRequestReposi
         db.OvertimeRequests
             .AsNoTracking()
             .Include(o => o.Employee)
-            .ThenInclude(e => e!.User);
+                .ThenInclude(e => e!.User)
+            .Include(o => o.Employee)
+                .ThenInclude(e => e!.Department)
+            .Include(o => o.Employee)
+                .ThenInclude(e => e!.Manager);
 
     public Task<OvertimeRequest?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
         WithIncludes().FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
@@ -19,6 +23,11 @@ public class OvertimeRequestRepository(AppDbContext db) : IOvertimeRequestReposi
     public Task<OvertimeRequest?> FindByIdTrackedAsync(Guid id, CancellationToken cancellationToken = default) =>
         db.OvertimeRequests
             .Include(o => o.Employee)
+                .ThenInclude(e => e!.User)
+            .Include(o => o.Employee)
+                .ThenInclude(e => e!.Department)
+            .Include(o => o.Employee)
+                .ThenInclude(e => e!.Manager)
             .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
 
     public async Task<IReadOnlyList<OvertimeRequest>> GetByEmployeeIdAsync(Guid employeeId, CancellationToken cancellationToken = default) =>

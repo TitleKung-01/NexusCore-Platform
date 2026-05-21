@@ -8,7 +8,8 @@ namespace NexusCore.Application.Services;
 public class UserService(
     IUserRepository users,
     IEmployeeProfileRepository profiles,
-    IDepartmentRepository departments) : IUserService
+    IDepartmentRepository departments,
+    IRoleDefinitionRepository roleDefinitions) : IUserService
 {
     public async Task<IReadOnlyList<UserResponse>> GetAllAsync(CancellationToken cancellationToken = default)
     {
@@ -25,6 +26,9 @@ public class UserService(
     public async Task<UserResponse?> CreateAsync(CreateUserRequest request, CancellationToken cancellationToken = default)
     {
         if (await users.UsernameExistsAsync(request.Username, cancellationToken))
+            return null;
+
+        if (await roleDefinitions.FindByNameAsync(request.Role, cancellationToken) is null)
             return null;
 
         var deptList = await departments.GetAllAsync(cancellationToken);
@@ -63,7 +67,7 @@ public class UserService(
         if (user is null)
             return null;
 
-        if (!UserRoles.All.Contains(request.Role, StringComparer.OrdinalIgnoreCase))
+        if (await roleDefinitions.FindByNameAsync(request.Role, cancellationToken) is null)
             return null;
 
         user.Role = request.Role;

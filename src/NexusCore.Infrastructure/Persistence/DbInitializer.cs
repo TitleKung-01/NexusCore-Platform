@@ -85,6 +85,8 @@ public static class DbInitializer
             });
         }
 
+        await RoleDefinitionSeed.SeedAsync(db);
+        await OnboardingTemplateSeed.SeedAsync(db);
         await SeedLeaveEntitlementsAsync(db);
         await SeedHolidaysAsync(db);
         await db.SaveChangesAsync();

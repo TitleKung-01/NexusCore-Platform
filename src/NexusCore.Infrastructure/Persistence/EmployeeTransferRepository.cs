@@ -6,7 +6,10 @@ namespace NexusCore.Infrastructure.Persistence;
 
 public class EmployeeTransferRepository(AppDbContext db) : IEmployeeTransferRepository
 {
-    public async Task<IReadOnlyList<EmployeeTransfer>> ListAsync(Guid? employeeId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<EmployeeTransfer>> ListAsync(
+        Guid? employeeId,
+        int? limit,
+        CancellationToken cancellationToken = default)
     {
         var query = db.EmployeeTransfers
             .AsNoTracking()
@@ -18,7 +21,12 @@ public class EmployeeTransferRepository(AppDbContext db) : IEmployeeTransferRepo
         if (employeeId.HasValue)
             query = query.Where(t => t.EmployeeId == employeeId.Value);
 
-        return await query.OrderByDescending(t => t.CreatedAtUtc).ToListAsync(cancellationToken);
+        query = query.OrderByDescending(t => t.CreatedAtUtc);
+
+        if (limit is > 0)
+            query = query.Take(limit.Value);
+
+        return await query.ToListAsync(cancellationToken);
     }
 
     public async Task AddAsync(EmployeeTransfer transfer, CancellationToken cancellationToken = default) =>

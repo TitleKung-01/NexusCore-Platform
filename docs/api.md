@@ -72,11 +72,11 @@ Workflow คล้ายลา — `api/overtime-requests`, `api/expense-claims`
 | GET/PUT | `/api/employees` |
 | GET | `/api/employee-transfers` |
 | GET | `/api/reports/leave-summary?year` (CSV) |
+| GET | `/api/reports/attendance?from&to&employeeId` (CSV, optional filter) |
 | CRUD | `/api/holidays` |
 | POST | `/api/payslips` (upload PDF) |
 | CRUD | `/api/announcements` |
 | CRUD | `/api/onboarding/templates`, assign tasks |
-| CRUD | `/api/reviews/cycles`, reviews |
 
 ## Payslips (employee)
 

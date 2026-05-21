@@ -9,23 +9,38 @@ public class TransferService(
     IEmployeeTransferRepository transfers,
     IEmployeeProfileRepository profiles) : ITransferService
 {
-    public async Task<IReadOnlyList<EmployeeTransferResponse>> ListAsync(Guid? employeeId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<EmployeeTransferResponse>> ListAsync(
+        Guid? employeeId,
+        int? limit,
+        CancellationToken cancellationToken = default)
     {
-        var target = employeeId ?? currentUser.UserId;
-        if (target is null)
+        if (currentUser.UserId is null)
             return [];
 
-        if (target != currentUser.UserId && !currentUser.IsInAnyRole(UserRoles.Hr, UserRoles.Admin, UserRoles.Manager))
-            return [];
+        Guid? filterEmployeeId;
 
-        if (target != currentUser.UserId && currentUser.IsInRole(UserRoles.Manager))
+        if (employeeId.HasValue)
         {
-            var profile = await profiles.FindByUserIdAsync(target.Value, cancellationToken);
-            if (profile?.ManagerId != currentUser.UserId && !currentUser.IsInAnyRole(UserRoles.Hr, UserRoles.Admin))
+            if (employeeId != currentUser.UserId &&
+                !currentUser.IsInAnyRole(UserRoles.Hr, UserRoles.Admin, UserRoles.Manager))
                 return [];
-        }
 
-        var list = await transfers.ListAsync(target, cancellationToken);
+            if (employeeId != currentUser.UserId && currentUser.IsInRole(UserRoles.Manager))
+            {
+                var profile = await profiles.FindByUserIdAsync(employeeId.Value, cancellationToken);
+                if (profile?.ManagerId != currentUser.UserId &&
+                    !currentUser.IsInAnyRole(UserRoles.Hr, UserRoles.Admin))
+                    return [];
+            }
+
+            filterEmployeeId = employeeId;
+        }
+        else if (currentUser.IsInAnyRole(UserRoles.Hr, UserRoles.Admin))
+            filterEmployeeId = null;
+        else
+            filterEmployeeId = currentUser.UserId;
+
+        var list = await transfers.ListAsync(filterEmployeeId, limit, cancellationToken);
         return list.Select(t => new EmployeeTransferResponse(
             t.Id,
             t.EmployeeId,

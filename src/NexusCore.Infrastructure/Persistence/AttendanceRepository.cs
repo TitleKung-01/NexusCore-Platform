@@ -12,6 +12,12 @@ public class AttendanceRepository(AppDbContext db) : IAttendanceRepository
             .Include(a => a.Employee)
             .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
 
+    public Task<AttendanceRecord?> FindByEmployeeAndDateAsync(Guid employeeId, DateOnly workDate, CancellationToken cancellationToken = default) =>
+        db.AttendanceRecords
+            .AsNoTracking()
+            .Include(a => a.Employee)
+            .FirstOrDefaultAsync(a => a.EmployeeId == employeeId && a.WorkDate == workDate, cancellationToken);
+
     public Task<AttendanceRecord?> FindByEmployeeAndDateTrackedAsync(Guid employeeId, DateOnly workDate, CancellationToken cancellationToken = default) =>
         db.AttendanceRecords.FirstOrDefaultAsync(a => a.EmployeeId == employeeId && a.WorkDate == workDate, cancellationToken);
 
@@ -20,6 +26,9 @@ public class AttendanceRepository(AppDbContext db) : IAttendanceRepository
         var query = db.AttendanceRecords
             .AsNoTracking()
             .Include(a => a.Employee)
+                .ThenInclude(e => e.User)
+            .Include(a => a.Employee)
+                .ThenInclude(e => e.Department)
             .Where(a => a.WorkDate >= from && a.WorkDate <= to);
 
         if (employeeId.HasValue)

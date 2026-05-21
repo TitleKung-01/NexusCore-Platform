@@ -16,10 +16,104 @@ public class OnboardingService(
             return [];
 
         var templates = await onboarding.ListTemplatesAsync(cancellationToken);
-        return templates.Select(t => new OnboardingTemplateResponse(
-            t.Id,
-            t.Name,
-            t.Tasks.Select(x => new OnboardingTemplateTaskResponse(x.Id, x.Title, x.SortOrder)).ToList())).ToList();
+        return templates.Select(MapTemplate).ToList();
+    }
+
+    public async Task<ServiceResult<OnboardingTemplateResponse>> CreateTemplateAsync(
+        SaveOnboardingTemplateRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (!currentUser.IsInAnyRole(UserRoles.Hr, UserRoles.Admin))
+            return ServiceResult<OnboardingTemplateResponse>.Fail("Forbidden.", 403);
+
+        var normalized = NormalizeTemplateTasks(request.Tasks);
+        if (string.IsNullOrWhiteSpace(request.Name))
+            return ServiceResult<OnboardingTemplateResponse>.Fail("Template name is required.", 400);
+        if (normalized.Count == 0)
+            return ServiceResult<OnboardingTemplateResponse>.Fail("At least one task is required.", 400);
+
+        var templateId = Guid.NewGuid();
+        var template = new OnboardingTemplate
+        {
+            Id = templateId,
+            Name = request.Name.Trim(),
+            Tasks = normalized.Select((t, index) => new OnboardingTemplateTask
+            {
+                Id = Guid.NewGuid(),
+                TemplateId = templateId,
+                Title = t.Title,
+                SortOrder = index + 1
+            }).ToList()
+        };
+
+        await onboarding.AddTemplateAsync(template, cancellationToken);
+        await onboarding.SaveChangesAsync(cancellationToken);
+        return ServiceResult<OnboardingTemplateResponse>.Ok(MapTemplate(template));
+    }
+
+    public async Task<ServiceResult<OnboardingTemplateResponse>> UpdateTemplateAsync(
+        Guid id,
+        SaveOnboardingTemplateRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (!currentUser.IsInAnyRole(UserRoles.Hr, UserRoles.Admin))
+            return ServiceResult<OnboardingTemplateResponse>.Fail("Forbidden.", 403);
+
+        var normalized = NormalizeTemplateTasks(request.Tasks);
+        if (string.IsNullOrWhiteSpace(request.Name))
+            return ServiceResult<OnboardingTemplateResponse>.Fail("Template name is required.", 400);
+        if (normalized.Count == 0)
+            return ServiceResult<OnboardingTemplateResponse>.Fail("At least one task is required.", 400);
+
+        var template = await onboarding.FindTemplateByIdTrackedAsync(id, cancellationToken);
+        if (template is null)
+            return ServiceResult<OnboardingTemplateResponse>.Fail("Template not found.", 404);
+
+        template.Name = request.Name.Trim();
+
+        var incomingIds = normalized.Where(t => t.Id.HasValue).Select(t => t.Id!.Value).ToHashSet();
+        var toRemove = template.Tasks.Where(t => !incomingIds.Contains(t.Id)).ToList();
+        if (toRemove.Count > 0)
+            onboarding.RemoveTemplateTasks(toRemove);
+
+        for (var i = 0; i < normalized.Count; i++)
+        {
+            var item = normalized[i];
+            var sortOrder = i + 1;
+            if (item.Id is Guid taskId)
+            {
+                var existing = template.Tasks.FirstOrDefault(t => t.Id == taskId);
+                if (existing is not null)
+                {
+                    existing.Title = item.Title;
+                    existing.SortOrder = sortOrder;
+                }
+                else
+                {
+                    template.Tasks.Add(new OnboardingTemplateTask
+                    {
+                        Id = Guid.NewGuid(),
+                        TemplateId = template.Id,
+                        Title = item.Title,
+                        SortOrder = sortOrder
+                    });
+                }
+            }
+            else
+            {
+                template.Tasks.Add(new OnboardingTemplateTask
+                {
+                    Id = Guid.NewGuid(),
+                    TemplateId = template.Id,
+                    Title = item.Title,
+                    SortOrder = sortOrder
+                });
+            }
+        }
+
+        await onboarding.SaveChangesAsync(cancellationToken);
+        var updated = await onboarding.FindTemplateByIdAsync(id, cancellationToken);
+        return ServiceResult<OnboardingTemplateResponse>.Ok(MapTemplate(updated!));
     }
 
     public async Task<IReadOnlyList<EmployeeOnboardingTaskResponse>> ListTasksAsync(Guid? employeeId, CancellationToken cancellationToken = default)
@@ -80,4 +174,20 @@ public class OnboardingService(
 
     private static EmployeeOnboardingTaskResponse MapTask(EmployeeOnboardingTask t) =>
         new(t.Id, t.EmployeeId, t.TemplateId, t.Title, t.IsCompleted, t.CompletedAtUtc?.ToString("o"), t.SortOrder);
+
+    private static OnboardingTemplateResponse MapTemplate(OnboardingTemplate t) =>
+        new(
+            t.Id,
+            t.Name,
+            t.Tasks
+                .OrderBy(x => x.SortOrder)
+                .Select(x => new OnboardingTemplateTaskResponse(x.Id, x.Title, x.SortOrder))
+                .ToList());
+
+    private static List<(Guid? Id, string Title)> NormalizeTemplateTasks(
+        IReadOnlyList<UpsertOnboardingTemplateTaskRequest> tasks) =>
+        tasks
+            .Select(t => (t.Id, Title: t.Title.Trim()))
+            .Where(t => !string.IsNullOrWhiteSpace(t.Title))
+            .ToList();
 }

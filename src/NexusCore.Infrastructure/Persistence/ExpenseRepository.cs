@@ -12,7 +12,11 @@ public class ExpenseRepository(AppDbContext db) : IExpenseRepository
             .AsNoTracking()
             .Include(e => e.LineItems)
             .Include(e => e.Employee)
-            .ThenInclude(emp => emp!.User);
+                .ThenInclude(emp => emp!.User)
+            .Include(e => e.Employee)
+                .ThenInclude(emp => emp!.Department)
+            .Include(e => e.Employee)
+                .ThenInclude(emp => emp!.Manager);
 
     public Task<ExpenseClaim?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
         WithIncludes().FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
@@ -21,6 +25,11 @@ public class ExpenseRepository(AppDbContext db) : IExpenseRepository
         db.ExpenseClaims
             .Include(e => e.LineItems)
             .Include(e => e.Employee)
+                .ThenInclude(emp => emp!.User)
+            .Include(e => e.Employee)
+                .ThenInclude(emp => emp!.Department)
+            .Include(e => e.Employee)
+                .ThenInclude(emp => emp!.Manager)
             .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
 
     public async Task<IReadOnlyList<ExpenseClaim>> GetByEmployeeIdAsync(Guid employeeId, CancellationToken cancellationToken = default) =>

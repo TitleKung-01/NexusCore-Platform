@@ -200,8 +200,24 @@ public class ExpenseService(
         return false;
     }
 
-    private static ExpenseClaimResponse Map(ExpenseClaim e) =>
-        new(e.Id, e.EmployeeId, e.Employee.FullName, e.Title, e.TotalAmount, e.Status.ToString(),
-            e.SubmittedAtUtc?.ToString("o"), e.DecidedAtUtc?.ToString("o"), e.ManagerComment,
+    private static ExpenseClaimResponse Map(ExpenseClaim e)
+    {
+        var emp = RequestEmployeeFields.From(e.Employee);
+        return new(
+            e.Id,
+            e.EmployeeId,
+            e.Employee.FullName,
+            emp.Username,
+            emp.Email,
+            emp.DepartmentName,
+            emp.Role,
+            emp.ManagerName,
+            e.Title,
+            e.TotalAmount,
+            e.Status.ToString(),
+            e.SubmittedAtUtc?.ToString("o"),
+            e.DecidedAtUtc?.ToString("o"),
+            e.ManagerComment,
             e.LineItems.Select(l => new ExpenseLineItemDto(l.Id, l.Description, l.Amount)).ToList());
+    }
 }

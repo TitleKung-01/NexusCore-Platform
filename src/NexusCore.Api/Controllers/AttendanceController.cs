@@ -9,6 +9,13 @@ namespace NexusCore.Api.Controllers;
 [Authorize]
 public class AttendanceController(IAttendanceService attendanceService) : ControllerBase
 {
+    [HttpGet("today")]
+    public async Task<IActionResult> Today(CancellationToken cancellationToken)
+    {
+        var record = await attendanceService.GetTodayAsync(cancellationToken);
+        return Ok(record);
+    }
+
     [HttpGet]
     public async Task<IActionResult> List([FromQuery] string from, [FromQuery] string to, [FromQuery] Guid? employeeId, CancellationToken cancellationToken)
     {

@@ -19,6 +19,17 @@ public class OnboardingRepository(AppDbContext db) : IOnboardingRepository
             .Include(t => t.Tasks.OrderBy(x => x.SortOrder))
             .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
 
+    public Task<OnboardingTemplate?> FindTemplateByIdTrackedAsync(Guid id, CancellationToken cancellationToken = default) =>
+        db.OnboardingTemplates
+            .Include(t => t.Tasks)
+            .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+
+    public async Task AddTemplateAsync(OnboardingTemplate template, CancellationToken cancellationToken = default) =>
+        await db.OnboardingTemplates.AddAsync(template, cancellationToken);
+
+    public void RemoveTemplateTasks(IEnumerable<OnboardingTemplateTask> tasks) =>
+        db.OnboardingTemplateTasks.RemoveRange(tasks);
+
     public async Task<IReadOnlyList<EmployeeOnboardingTask>> ListTasksForEmployeeAsync(Guid employeeId, CancellationToken cancellationToken = default) =>
         await db.EmployeeOnboardingTasks
             .AsNoTracking()

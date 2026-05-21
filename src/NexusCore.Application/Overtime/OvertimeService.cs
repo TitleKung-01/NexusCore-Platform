@@ -193,7 +193,24 @@ public class OvertimeService(
         return false;
     }
 
-    private static OvertimeRequestResponse Map(OvertimeRequest o) =>
-        new(o.Id, o.EmployeeId, o.Employee.FullName, o.WorkDate.ToString("yyyy-MM-dd"), o.Hours, o.Reason,
-            o.Status.ToString(), o.SubmittedAtUtc?.ToString("o"), o.DecidedAtUtc?.ToString("o"), o.ManagerComment);
+    private static OvertimeRequestResponse Map(OvertimeRequest o)
+    {
+        var emp = RequestEmployeeFields.From(o.Employee);
+        return new(
+            o.Id,
+            o.EmployeeId,
+            o.Employee.FullName,
+            emp.Username,
+            emp.Email,
+            emp.DepartmentName,
+            emp.Role,
+            emp.ManagerName,
+            o.WorkDate.ToString("yyyy-MM-dd"),
+            o.Hours,
+            o.Reason,
+            o.Status.ToString(),
+            o.SubmittedAtUtc?.ToString("o"),
+            o.DecidedAtUtc?.ToString("o"),
+            o.ManagerComment);
+    }
 }

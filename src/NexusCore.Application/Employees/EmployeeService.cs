@@ -11,7 +11,8 @@ public class EmployeeService(
     IDepartmentRepository departments,
     ILeaveTypeRepository leaveTypes,
     IUserRepository users,
-    IEmployeeTransferRepository transfers) : IEmployeeService
+    IEmployeeTransferRepository transfers,
+    IRoleDefinitionRepository roleDefinitions) : IEmployeeService
 {
     public async Task<MeResponse?> GetMeAsync(CancellationToken cancellationToken = default)
     {
@@ -19,7 +20,7 @@ public class EmployeeService(
             return null;
 
         var profile = await profiles.FindByUserIdAsync(currentUser.UserId.Value, cancellationToken);
-        return profile is null ? null : MapMe(profile);
+        return profile is null ? null : await MapMeAsync(profile, cancellationToken);
     }
 
     public async Task<ServiceResult<MeResponse>> UpdateMeAsync(UpdateMeRequest request, CancellationToken cancellationToken = default)
@@ -37,7 +38,7 @@ public class EmployeeService(
 
         await profiles.SaveChangesAsync(cancellationToken);
         var updated = await profiles.FindByUserIdAsync(currentUser.UserId.Value, cancellationToken);
-        return ServiceResult<MeResponse>.Ok(MapMe(updated!));
+        return ServiceResult<MeResponse>.Ok(await MapMeAsync(updated!, cancellationToken));
     }
 
     public async Task<IReadOnlyList<DepartmentResponse>> GetDepartmentsAsync(CancellationToken cancellationToken = default)
@@ -117,7 +118,7 @@ public class EmployeeService(
 
         if (!string.IsNullOrWhiteSpace(request.Role))
         {
-            if (!UserRoles.All.Contains(request.Role, StringComparer.OrdinalIgnoreCase))
+            if (await roleDefinitions.FindByNameAsync(request.Role, cancellationToken) is null)
                 return ServiceResult<EmployeeListItem>.Fail("Invalid role.", 400);
             user.Role = request.Role;
         }
@@ -133,8 +134,10 @@ public class EmployeeService(
         return ServiceResult<EmployeeListItem>.Ok(MapListItem(updated!));
     }
 
-    private static MeResponse MapMe(EmployeeProfile p) =>
-        new(
+    private async Task<MeResponse> MapMeAsync(EmployeeProfile p, CancellationToken cancellationToken)
+    {
+        var (canApprove, isHrAccess) = await ResolveRoleFlagsAsync(p.User.Role, cancellationToken);
+        return new MeResponse(
             p.UserId,
             p.User.Username,
             p.User.Role,
@@ -144,7 +147,23 @@ public class EmployeeService(
             p.DepartmentId,
             p.Department.Name,
             p.ManagerId,
-            p.Manager?.FullName);
+            p.Manager?.FullName,
+            canApprove,
+            isHrAccess);
+    }
+
+    private async Task<(bool CanApprove, bool IsHrAccess)> ResolveRoleFlagsAsync(
+        string roleName,
+        CancellationToken cancellationToken)
+    {
+        var def = await roleDefinitions.FindByNameAsync(roleName, cancellationToken);
+        if (def is not null)
+            return (def.CanApprove, def.IsHrAccess);
+
+        return (
+            UserRoles.Approvers.Contains(roleName, StringComparer.OrdinalIgnoreCase),
+            UserRoles.HrOrAdmin.Contains(roleName, StringComparer.OrdinalIgnoreCase));
+    }
 
     private static EmployeeListItem MapListItem(EmployeeProfile p) =>
         new(

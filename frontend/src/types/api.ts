@@ -9,6 +9,29 @@ export interface MeResponse {
   departmentName: string
   managerId: string | null
   managerName: string | null
+  canApprove: boolean
+  isHrAccess: boolean
+}
+
+export interface RoleDefinition {
+  id: string
+  name: string
+  description: string | null
+  canApprove: boolean
+  isHrAccess: boolean
+  isBuiltIn: boolean
+}
+
+export interface CreateDepartmentRequest {
+  name: string
+  code: string
+}
+
+export interface CreateRoleRequest {
+  name: string
+  description?: string | null
+  canApprove: boolean
+  isHrAccess: boolean
 }
 
 export interface UpdateMeRequest {
@@ -39,10 +62,18 @@ export interface LeaveType {
   code: string
 }
 
-export interface LeaveRequest {
+export interface RequestEmployeeFields {
+  employeeName: string
+  employeeUsername?: string
+  employeeEmail?: string
+  employeeDepartment?: string
+  employeeRole?: string
+  employeeManagerName?: string | null
+}
+
+export interface LeaveRequest extends RequestEmployeeFields {
   id: string
   employeeId: string
-  employeeName: string
   leaveTypeId: string
   leaveTypeName: string
   startDate: string
@@ -126,12 +157,20 @@ export interface AttendanceRecord {
   workDate: string
   checkInUtc: string | null
   checkOutUtc: string | null
+  checkInLocal: string | null
+  checkOutLocal: string | null
+  isLateCheckIn: boolean
+  lateMinutes: number
+  isEarlyCheckOut: boolean
+  statusLabel: string
+  workSummary: string | null
+  canCheckIn: boolean
+  canCheckOut: boolean
 }
 
-export interface OvertimeRequest {
+export interface OvertimeRequest extends RequestEmployeeFields {
   id: string
   employeeId: string
-  employeeName: string
   workDate: string
   hours: number
   reason: string
@@ -153,10 +192,9 @@ export interface ExpenseLineItem {
   amount: number
 }
 
-export interface ExpenseClaim {
+export interface ExpenseClaim extends RequestEmployeeFields {
   id: string
   employeeId: string
-  employeeName: string
   title: string
   totalAmount: number
   status: string
@@ -260,41 +298,4 @@ export interface EmployeeOnboardingTask {
 export interface AssignOnboardingRequest {
   templateId: string
   employeeId: string
-}
-
-export interface ReviewCycle {
-  id: string
-  name: string
-  startDate: string
-  endDate: string
-  isOpen: boolean
-}
-
-export interface PerformanceReview {
-  id: string
-  cycleId: string
-  cycleName: string
-  employeeId: string
-  employeeName: string
-  managerId: string | null
-  selfComment: string | null
-  selfScore: number | null
-  managerComment: string | null
-  managerScore: number | null
-}
-
-export interface CreateReviewCycleRequest {
-  name: string
-  startDate: string
-  endDate: string
-}
-
-export interface SubmitSelfReviewRequest {
-  selfComment?: string | null
-  selfScore?: number | null
-}
-
-export interface SubmitManagerReviewRequest {
-  managerComment?: string | null
-  managerScore?: number | null
 }

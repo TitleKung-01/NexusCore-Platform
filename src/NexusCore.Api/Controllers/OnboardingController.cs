@@ -18,6 +18,26 @@ public class OnboardingController(IOnboardingService onboardingService) : Contro
         return Ok(list);
     }
 
+    [HttpPost("templates")]
+    [Authorize(Roles = $"{UserRoles.Hr},{UserRoles.Admin}")]
+    public async Task<IActionResult> CreateTemplate([FromBody] SaveOnboardingTemplateRequest request, CancellationToken cancellationToken)
+    {
+        var result = await onboardingService.CreateTemplateAsync(request, cancellationToken);
+        if (!result.Success)
+            return StatusCode(result.StatusCode, new { Message = result.Error });
+        return Ok(result.Data);
+    }
+
+    [HttpPut("templates/{id:guid}")]
+    [Authorize(Roles = $"{UserRoles.Hr},{UserRoles.Admin}")]
+    public async Task<IActionResult> UpdateTemplate(Guid id, [FromBody] SaveOnboardingTemplateRequest request, CancellationToken cancellationToken)
+    {
+        var result = await onboardingService.UpdateTemplateAsync(id, request, cancellationToken);
+        if (!result.Success)
+            return StatusCode(result.StatusCode, new { Message = result.Error });
+        return Ok(result.Data);
+    }
+
     [HttpGet("tasks")]
     public async Task<IActionResult> ListTasks([FromQuery] Guid? employeeId, CancellationToken cancellationToken)
     {

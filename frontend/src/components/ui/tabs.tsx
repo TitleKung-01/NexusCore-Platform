@@ -39,7 +39,15 @@ export function TabsList({ children, className }: { children: ReactNode; classNa
   return <div className={cn('flex flex-wrap gap-2', className)}>{children}</div>
 }
 
-export function TabsTrigger({ value, children }: { value: string; children: ReactNode }) {
+export function TabsTrigger({
+  value,
+  children,
+  className,
+}: {
+  value: string
+  children: ReactNode
+  className?: string
+}) {
   const ctx = useContext(TabsContext)
   if (!ctx) throw new Error('TabsTrigger must be inside Tabs')
   const active = ctx.value === value
@@ -48,6 +56,7 @@ export function TabsTrigger({ value, children }: { value: string; children: Reac
       type="button"
       size="sm"
       variant={active ? 'default' : 'outline'}
+      className={className}
       onClick={() => ctx.setValue(value)}
     >
       {children}

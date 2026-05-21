@@ -10,6 +10,18 @@ public class AttendanceService(
     IAttendanceRepository attendance,
     IEmployeeProfileRepository profiles) : IAttendanceService
 {
+    private const int MaxWorkSummaryLength = 2000;
+
+    public async Task<AttendanceResponse?> GetTodayAsync(CancellationToken cancellationToken = default)
+    {
+        if (currentUser.UserId is null)
+            return null;
+
+        var today = DateOnly.FromDateTime(AttendanceTimeRules.ToBangkokLocal(DateTime.UtcNow));
+        var record = await attendance.FindByEmployeeAndDateAsync(currentUser.UserId.Value, today, cancellationToken);
+        return record is null ? null : Map(record);
+    }
+
     public async Task<IReadOnlyList<AttendanceResponse>> ListAsync(string from, string to, Guid? employeeId, CancellationToken cancellationToken = default)
     {
         if (!DateOnly.TryParse(from, out var fromDate) || !DateOnly.TryParse(to, out var toDate))
@@ -54,7 +66,7 @@ public class AttendanceService(
             await attendance.AddAsync(record, cancellationToken);
         }
         else if (record.CheckInUtc is not null)
-            return ServiceResult<AttendanceResponse>.Fail("Already checked in for this date.", 409);
+            return ServiceResult<AttendanceResponse>.Fail("ลงเวลาเข้าแล้วสำหรับวันนี้", 409);
         else
             record.CheckInUtc = DateTime.UtcNow;
 
@@ -73,22 +85,49 @@ public class AttendanceService(
 
         var record = await attendance.FindByEmployeeAndDateTrackedAsync(currentUser.UserId.Value, workDate, cancellationToken);
         if (record is null || record.CheckInUtc is null)
-            return ServiceResult<AttendanceResponse>.Fail("Check in first.", 400);
+            return ServiceResult<AttendanceResponse>.Fail("ต้องลงเวลาเข้าก่อน", 400);
         if (record.CheckOutUtc is not null)
-            return ServiceResult<AttendanceResponse>.Fail("Already checked out for this date.", 409);
+            return ServiceResult<AttendanceResponse>.Fail("ลงเวลาออกแล้วสำหรับวันนี้", 409);
 
         record.CheckOutUtc = DateTime.UtcNow;
+        record.WorkSummary = NormalizeWorkSummary(request.WorkSummary);
+
         await attendance.SaveChangesAsync(cancellationToken);
         var updated = await attendance.FindByIdAsync(record.Id, cancellationToken);
         return ServiceResult<AttendanceResponse>.Ok(Map(updated!));
     }
 
-    private static AttendanceResponse Map(AttendanceRecord a) =>
-        new(
+    private static string? NormalizeWorkSummary(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return null;
+        var trimmed = value.Trim();
+        return trimmed.Length > MaxWorkSummaryLength ? trimmed[..MaxWorkSummaryLength] : trimmed;
+    }
+
+    private static AttendanceResponse Map(AttendanceRecord a)
+    {
+        var checkInLocal = a.CheckInUtc is null ? null : AttendanceTimeRules.FormatLocalTime(a.CheckInUtc.Value);
+        var checkOutLocal = a.CheckOutUtc is null ? null : AttendanceTimeRules.FormatLocalTime(a.CheckOutUtc.Value);
+        var isLate = a.CheckInUtc is not null && AttendanceTimeRules.IsLateCheckIn(a.CheckInUtc.Value);
+        var lateMinutes = a.CheckInUtc is null ? 0 : AttendanceTimeRules.LateMinutes(a.CheckInUtc.Value);
+        var isEarly = a.CheckOutUtc is not null && AttendanceTimeRules.IsEarlyCheckOut(a.CheckOutUtc.Value);
+
+        return new AttendanceResponse(
             a.Id,
             a.EmployeeId,
             a.Employee?.FullName ?? string.Empty,
             a.WorkDate.ToString("yyyy-MM-dd"),
             a.CheckInUtc?.ToString("o"),
-            a.CheckOutUtc?.ToString("o"));
+            a.CheckOutUtc?.ToString("o"),
+            checkInLocal,
+            checkOutLocal,
+            isLate,
+            lateMinutes,
+            isEarly,
+            AttendanceTimeRules.BuildStatusLabel(a.CheckInUtc, a.CheckOutUtc),
+            a.WorkSummary,
+            a.CheckInUtc is null,
+            a.CheckInUtc is not null && a.CheckOutUtc is null);
+    }
 }

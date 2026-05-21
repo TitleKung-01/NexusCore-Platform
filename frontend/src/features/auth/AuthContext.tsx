@@ -19,6 +19,7 @@ interface AuthContextValue {
   refreshMe: () => Promise<void>
   isApprover: boolean
   isHr: boolean
+  isAdmin: boolean
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -70,15 +71,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const isApprover = useMemo(
-    () => !!me && ['Manager', 'Hr', 'Admin'].includes(me.role),
+    () => !!me && (me.canApprove ?? ['Manager', 'Hr', 'Admin'].includes(me.role)),
     [me]
   )
-
-  const isHr = useMemo(() => !!me && ['Hr', 'Admin'].includes(me.role), [me])
+  const isHr = useMemo(
+    () => !!me && (me.isHrAccess ?? ['Hr', 'Admin'].includes(me.role)),
+    [me]
+  )
+  const isAdmin = useMemo(() => !!me && me.role === 'Admin', [me])
 
   const value = useMemo(
-    () => ({ token, me, loading, login, logout, refreshMe, isApprover, isHr }),
-    [token, me, loading, login, logout, refreshMe, isApprover, isHr]
+    () => ({ token, me, loading, login, logout, refreshMe, isApprover, isHr, isAdmin }),
+    [token, me, loading, login, logout, refreshMe, isApprover, isHr, isAdmin]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

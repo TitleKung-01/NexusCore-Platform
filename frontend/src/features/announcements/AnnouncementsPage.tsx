@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Megaphone, Pencil, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { api, formatApiError } from '@/api'
 import { Button } from '@/components/ui/button'
@@ -15,6 +16,8 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/features/auth/AuthContext'
+import { PageHeader, PageShell, premiumCardClass } from '@/features/shared/PageHeader'
+import { cn } from '@/lib/utils'
 import type { Announcement } from '@/types/api'
 
 export function AnnouncementsPage() {
@@ -67,69 +70,128 @@ export function AnnouncementsPage() {
     }
   }
 
+  const activeCount = items.filter((a) => a.isActive).length
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">ประกาศ</h2>
-        {isHr && (
-          <Button onClick={openCreate}>สร้างประกาศ</Button>
-        )}
+    <PageShell>
+      <PageHeader
+        icon={<Megaphone className="size-7" />}
+        title="ประกาศองค์กร"
+        description="ข่าวสารและประกาศสำคัญจาก HR ถึงพนักงานทุกคน"
+        actions={
+          isHr ? (
+            <Button onClick={openCreate} className="rounded-xl font-bold btn-premium shadow-md shadow-primary/20">
+              <Plus className="size-4 mr-1" />
+              สร้างประกาศ
+            </Button>
+          ) : undefined
+        }
+      />
+
+      <div className="flex gap-3">
+        <div className="rounded-xl border border-blue-500/10 bg-blue-500/5 px-4 py-2 text-sm font-bold text-primary">
+          ทั้งหมด {items.length} รายการ
+        </div>
+        <div className="rounded-xl border border-emerald-500/10 bg-emerald-500/5 px-4 py-2 text-sm font-bold text-emerald-700 dark:text-emerald-400">
+          เปิดใช้งาน {activeCount}
+        </div>
       </div>
+
       <div className="space-y-4">
         {items.map((a) => (
-          <Card key={a.id} className={!a.isActive ? 'opacity-60' : ''}>
-            <CardHeader className="flex flex-row items-start justify-between gap-4">
-              <div>
-                <CardTitle>{a.title}</CardTitle>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {new Date(a.publishedAtUtc).toLocaleString('th-TH')}
-                </p>
+          <Card
+            key={a.id}
+            className={cn(
+              premiumCardClass,
+              !a.isActive && 'opacity-70',
+              a.isActive && 'ring-1 ring-blue-500/10'
+            )}
+          >
+            <CardHeader className="border-b border-border/40 pb-4 flex flex-row items-start justify-between gap-4">
+              <div className="flex gap-3 min-w-0">
+                <div className="size-10 rounded-xl bg-gradient-to-br from-blue-500/15 to-indigo-500/15 flex items-center justify-center shrink-0">
+                  <Megaphone className="size-5 text-primary" />
+                </div>
+                <div className="min-w-0">
+                  <CardTitle className="text-lg font-bold leading-snug">{a.title}</CardTitle>
+                  <p className="text-xs text-muted-foreground mt-1 font-medium">
+                    {new Date(a.publishedAtUtc).toLocaleString('th-TH', {
+                      dateStyle: 'medium',
+                      timeStyle: 'short',
+                    })}
+                  </p>
+                </div>
               </div>
-              <div className="flex gap-2 items-center">
-                {!a.isActive && <Badge variant="outline">ปิดใช้งาน</Badge>}
+              <div className="flex gap-2 items-center shrink-0">
+                {!a.isActive && (
+                  <Badge variant="outline" className="font-semibold">
+                    ปิดใช้งาน
+                  </Badge>
+                )}
                 {isHr && (
-                  <Button size="sm" variant="outline" onClick={() => openEdit(a)}>
+                  <Button size="sm" variant="outline" className="rounded-lg" onClick={() => openEdit(a)}>
+                    <Pencil className="size-3.5 mr-1" />
                     แก้ไข
                   </Button>
                 )}
               </div>
             </CardHeader>
-            <CardContent>
-              <p className="text-sm whitespace-pre-wrap">{a.body}</p>
+            <CardContent className="pt-4">
+              <p className="text-sm whitespace-pre-wrap leading-relaxed text-foreground/90">{a.body}</p>
             </CardContent>
           </Card>
         ))}
-        {items.length === 0 && <p className="text-muted-foreground">ยังไม่มีประกาศ</p>}
+        {items.length === 0 && (
+          <Card className={premiumCardClass}>
+            <CardContent className="py-16 text-center">
+              <Megaphone className="size-12 mx-auto text-muted-foreground/40 mb-3" />
+              <p className="text-muted-foreground font-medium">ยังไม่มีประกาศ</p>
+              {isHr && (
+                <Button variant="link" className="mt-2" onClick={openCreate}>
+                  สร้างประกาศแรก
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </div>
+
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
+        <DialogContent className="rounded-2xl">
           <DialogHeader>
             <DialogTitle>{editId ? 'แก้ไขประกาศ' : 'สร้างประกาศ'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-2">
-              <Label>หัวข้อ</Label>
-              <Input value={title} onChange={(e) => setTitle(e.target.value)} required />
+              <Label className="font-semibold">หัวข้อ</Label>
+              <Input value={title} onChange={(e) => setTitle(e.target.value)} required className="rounded-xl" />
             </div>
             <div className="space-y-2">
-              <Label>เนื้อหา</Label>
-              <Textarea value={body} onChange={(e) => setBody(e.target.value)} rows={5} required />
+              <Label className="font-semibold">เนื้อหา</Label>
+              <Textarea value={body} onChange={(e) => setBody(e.target.value)} rows={5} required className="rounded-xl" />
             </div>
             {editId && (
-              <label className="flex items-center gap-2 text-sm">
-                <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} />
+              <label className="flex items-center gap-2 text-sm font-medium rounded-lg border p-3 cursor-pointer hover:bg-muted/50">
+                <input
+                  type="checkbox"
+                  checked={isActive}
+                  onChange={(e) => setIsActive(e.target.checked)}
+                  className="size-4 accent-primary"
+                />
                 เปิดใช้งาน
               </label>
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>
+            <Button variant="outline" className="rounded-xl" onClick={() => setOpen(false)}>
               ยกเลิก
             </Button>
-            <Button onClick={save}>บันทึก</Button>
+            <Button onClick={save} className="rounded-xl font-bold btn-premium">
+              บันทึก
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageShell>
   )
 }
