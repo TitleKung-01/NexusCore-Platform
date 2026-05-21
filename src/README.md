@@ -1,4 +1,4 @@
-# NexusCore — Clean Architecture (.NET)
+# HR-Lite — Clean Architecture backend (.NET)
 
 ```
 src/

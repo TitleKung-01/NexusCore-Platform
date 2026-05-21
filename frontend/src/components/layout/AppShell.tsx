@@ -20,7 +20,7 @@ export function AppShell() {
     <div className="flex min-h-svh">
       <aside className="w-56 border-r bg-card flex flex-col">
         <div className="p-4">
-          <h1 className="font-semibold text-lg">NexusCore HR</h1>
+          <h1 className="font-semibold text-lg">HR-Lite</h1>
           <p className="text-muted-foreground text-xs mt-1">ระบบภายในองค์กร</p>
         </div>
         <Separator />

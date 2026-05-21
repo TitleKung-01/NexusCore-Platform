@@ -1,4 +1,4 @@
-# NexusCore-Platform — common dev commands
+# HR-Lite — common dev commands
 # Requires: make, dotnet SDK, Node.js + npm
 
 ifeq ($(OS),Windows_NT)
@@ -7,7 +7,7 @@ SHELL := cmd.exe
 endif
 
 ROOT        := $(CURDIR)
-SLN         := NexusCore-Platform.sln
+SLN         := HR-Lite.sln
 BACKEND     := src/NexusCore.Api
 GATEWAY     := gateway
 FRONTEND    := frontend
@@ -27,7 +27,7 @@ COMPOSE := docker compose
 .DEFAULT_GOAL := help
 
 help:
-	@echo NexusCore-Platform
+	@echo HR-Lite
 	@echo.
 	@echo PostgreSQL (required for backend):
 	@echo   postgres - localhost:$(POSTGRES_PORT)  (make db-up)

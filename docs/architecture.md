@@ -1,4 +1,4 @@
-# NexusCore — สถาปัตยกรรมและโครงสร้างโฟลเดอร์
+# HR-Lite — สถาปัตยกรรมและโครงสร้างโฟลเดอร์
 
 สแต็ก: **ASP.NET Core** (`src/`, `gateway/`) + **React (Vite)** (`frontend/`)
 

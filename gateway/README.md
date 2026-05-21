@@ -1,4 +1,4 @@
-# NexusCore Gateway — YARP
+# HR-Lite Gateway — YARP
 
 Reverse proxy ระหว่าง `frontend` กับ `backend` — **ไม่มี business logic**
 

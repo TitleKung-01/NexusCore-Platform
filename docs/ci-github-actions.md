@@ -11,7 +11,7 @@
 
 ```text
         ┌─────────────┐
-        │ dotnet      │  dotnet build NexusCore-Platform.sln
+        │ dotnet      │  dotnet build HR-Lite.sln
         └─────────────┘
         ┌─────────────┐
         │ frontend    │  npm ci, npm run build, npm run build:docker

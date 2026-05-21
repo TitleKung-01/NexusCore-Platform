@@ -1,4 +1,4 @@
-# NexusCore Frontend — React + TypeScript + shadcn/ui
+# HR-Lite Frontend — React + TypeScript + shadcn/ui
 
 ## Stack
 

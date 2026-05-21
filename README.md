@@ -1,4 +1,4 @@
-# NexusCore Platform
+# HR-Lite
 
 Intranet HR-lite: React (TypeScript, shadcn/ui) + YARP Gateway + ASP.NET Core API — โปรไฟล์พนักงาน, คำขอลา, workflow อนุมัติ, PostgreSQL.
 

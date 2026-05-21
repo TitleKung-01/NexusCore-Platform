@@ -28,7 +28,7 @@ export function LoginPage() {
     <div className="min-h-svh flex items-center justify-center bg-muted/40 p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>NexusCore HR</CardTitle>
+          <CardTitle>HR-Lite</CardTitle>
           <CardDescription>เข้าสู่ระบบพนักงาน — demo: employee / manager / admin</CardDescription>
         </CardHeader>
         <CardContent>

@@ -79,7 +79,7 @@ src/
 ## Microservices — NexusCore repo layout
 
 ```
-NexusCore-Platform/
+HR-Lite/
 ├── gateway/                    # YARP (existing)
 ├── backend/                    # optional: keep until split complete
 ├── services/

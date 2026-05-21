@@ -15,7 +15,7 @@ description: >-
 ## NexusCore layout (current baseline)
 
 ```
-NexusCore-Platform/
+HR-Lite/
 ├── backend/          # Layered API (EF Core, JWT, FluentValidation)
 ├── gateway/          # YARP reverse proxy
 ├── frontend/         # React (Vite)

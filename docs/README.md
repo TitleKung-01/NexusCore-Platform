@@ -1,4 +1,4 @@
-# NexusCore Platform — Documentation
+# HR-Lite — Documentation
 
 เอกสารสำหรับพัฒนาและฝึก DevOps บนเครื่องตัวเอง (ไม่ต้องเช่า server)
 
