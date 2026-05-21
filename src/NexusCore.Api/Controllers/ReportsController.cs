@@ -14,6 +14,6 @@ public class ReportsController(IReportService reportService) : ControllerBase
     public async Task<IActionResult> LeaveSummary([FromQuery] int year, CancellationToken cancellationToken)
     {
         var csv = await reportService.ExportLeaveSummaryCsvAsync(year, cancellationToken);
-        return File(csv, "text/csv", $"leave-summary-{year}.csv");
+        return File(csv, "text/csv; charset=utf-8", $"leave-summary-{year}.csv");
     }
 }
