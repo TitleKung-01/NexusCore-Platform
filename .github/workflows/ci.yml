@@ -23,7 +23,7 @@ jobs:
           dotnet-version: "10.0.x"
 
       - name: Restore and build solution
-        run: dotnet build "NexusCore-Platform.sln" -c Release --no-restore false
+        run: dotnet build "NexusCore-Platform.sln" -c Release
 
   frontend:
     name: Frontend build
