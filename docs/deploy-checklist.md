@@ -17,7 +17,7 @@ make docker-up
 
 ## หลังรัน — smoke test
 
-- [ ] เปิด http://localhost:8080 — หน้าเว็บโหลด
+- [ ] เปิด http://localhost:8081 — หน้าเว็บโหลด
 - [ ] Login (admin / password123) สำเร็จ
 - [ ] ดึงข้อมูลลับได้ (JWT ผ่าน gateway)
 - [ ] `make health` — backend + gateway ตอบ `healthy`
@@ -25,7 +25,7 @@ make docker-up
 ```bash
 make health
 curl -s http://localhost:5000/health
-curl -s http://localhost:8080/
+curl -s http://localhost:8081/
 ```
 
 ## ถ้าพัง

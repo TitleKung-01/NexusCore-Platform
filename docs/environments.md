@@ -24,6 +24,7 @@ Shared routes (rate limit, `/api` path): `gateway/appsettings.json`
 |---------|-----|
 | Backend | http://localhost:5100/health |
 | Gateway | http://localhost:5000/health |
+| Swagger (dev, backend direct) | http://localhost:5100/swagger |
 
 ```bash
 make health   # หลัง make dev หรือ docker-up (gateway/backend บน host)

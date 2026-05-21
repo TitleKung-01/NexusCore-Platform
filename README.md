@@ -1,6 +1,6 @@
 # NexusCore Platform
 
-Fullstack demo: React (Vite) + YARP Gateway + ASP.NET Backend (JWT, rate limit).
+Fullstack demo: React (Vite) + YARP Gateway + ASP.NET Core API (EF Core, JWT, FluentValidation, Swagger).
 
 ## Quick start
 
@@ -18,7 +18,7 @@ make stop
 make docker-up
 ```
 
-Open http://localhost:8080
+Open http://localhost:8081
 
 ## Documentation
 

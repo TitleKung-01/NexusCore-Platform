@@ -8,6 +8,9 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:5100
       - Jwt__Key=DockerLocalPracticeKey-32CharsMinForHmacSha256!
+      - ConnectionStrings__DefaultConnection=Data Source=/app/data/nexuscore.db
+    volumes:
+      - backend-data:/app/data
     # Internal only — traffic enters via gateway-service
 
   gateway-service:
@@ -27,6 +30,9 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "8080:80" # เปิดเว็บที่ http://localhost:8080
+      - "${DOCKER_FRONTEND_PORT:-8081}:80" # default 8081 — หลีกเลี่ยงชน :8080 กับ container อื่น
     depends_on:
       - gateway-service
+
+volumes:
+  backend-data:
