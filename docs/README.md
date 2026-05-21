@@ -4,6 +4,7 @@
 
 | เอกสาร | เนื้อหา |
 |--------|---------|
+| [architecture.md](./architecture.md) | โครงสร้าง repo — Layered backend, feature folders frontend |
 | [environments.md](./environments.md) | แยก Local vs Docker — พอร์ต, config files |
 | [devops-local-practice.md](./devops-local-practice.md) | **แผนฝึก DevOps ฟรีบน laptop** (หลัก) |
 | [ci-github-actions.md](./ci-github-actions.md) | CI pipeline บน GitHub Actions |

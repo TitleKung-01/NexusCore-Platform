@@ -23,7 +23,7 @@ Thumbs.db
 # Logs
 *.log
 
-# SQLite (local dev)
+# Legacy SQLite (no longer used; safe to delete locally)
 *.db
 *.db-shm
 *.db-wal

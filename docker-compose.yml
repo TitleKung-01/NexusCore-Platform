@@ -1,16 +1,33 @@
 # Docker stack — uses Production env so gateway talks to backend-service (not localhost)
 services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-nexuscore}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nexuscore_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-nexuscore}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nexuscore -d nexuscore"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   backend-service:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: ./src
+      dockerfile: NexusCore.Api/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:5100
       - Jwt__Key=DockerLocalPracticeKey-32CharsMinForHmacSha256!
-      - ConnectionStrings__DefaultConnection=Data Source=/app/data/nexuscore.db
-    volumes:
-      - backend-data:/app/data
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=${POSTGRES_DB:-nexuscore};Username=${POSTGRES_USER:-nexuscore};Password=${POSTGRES_PASSWORD:-nexuscore_dev}
+    depends_on:
+      postgres:
+        condition: service_healthy
     # Internal only — traffic enters via gateway-service
 
   gateway-service:
@@ -30,9 +47,9 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "${DOCKER_FRONTEND_PORT:-8081}:80" # default 8081 — หลีกเลี่ยงชน :8080 กับ container อื่น
+      - "${DOCKER_FRONTEND_PORT:-8081}:80"
     depends_on:
       - gateway-service
 
 volumes:
-  backend-data:
+  postgres-data:

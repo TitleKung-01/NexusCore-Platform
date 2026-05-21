@@ -56,7 +56,8 @@ jobs:
       - name: Build backend image
         uses: docker/build-push-action@v6
         with:
-          context: ./backend
+          context: ./src
+          file: NexusCore.Api/Dockerfile
           push: false
           tags: nexuscore-backend:ci
           cache-from: type=gha

@@ -8,7 +8,7 @@
 ┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
 │  1. make dev    │ ──► │ 2. make docker-up│ ──► │ 3. Deploy จริง │
 │  พัฒนา / debug  │     │ ลอง container    │     │ (ทีหลัง, เสียเงิน)│
-│  :5173          │     │ :8080            │     │ domain จริง      │
+│  :5173 + PG     │     │ :8081 + stack    │     │ domain จริง      │
 └─────────────────┘     └──────────────────┘     └─────────────────┘
         ▲                         ▲
         │                         │
@@ -21,7 +21,7 @@
 | **Docker local** | `make docker-up` | image, compose, network, Nginx proxy |
 | **CI (cloud runner ฟรี)** | push Git → Actions | pipeline, automated build |
 
-**ห้ามรัน `make dev` กับ `make docker-up` พร้อมกัน** — พอร์ต 5000 ชนกัน
+**ห้ามรัน `make dev` กับ `make docker-up` พร้อมกัน** — พอร์ต 5000 และ 5432 ชนกัน
 
 ---
 
@@ -37,7 +37,7 @@
 2. `make install`
 3. `make dev` → เปิด http://localhost:5173
 4. Login ทด (admin / password123)
-5. `make stop` แล้ว `make docker-up` → เปิด http://localhost:8080
+5. `make stop` แล้ว `make docker-up` → เปิด http://localhost:8081
 6. `make health` หลัง stack รัน
 
 ### เอกสารที่อ่าน
@@ -121,9 +121,9 @@ make ci-local
 
 ### JWT (backend)
 
-- Local: `backend/appsettings.Development.json`
+- Local: `src/NexusCore.Api/appsettings.Development.json`
 - Docker: env `Jwt__Key` ใน `docker-compose.yml`
-- อย่า commit key จริงของ production — ดู `backend/appsettings.example.json`
+- อย่า commit key จริงของ production — ดู `src/NexusCore.Api/appsettings.example.json`
 
 ---
 

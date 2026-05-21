@@ -1,16 +1,37 @@
-# React + Vite
+# NexusCore Frontend — React + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## โครงสร้าง `src/`
 
-Currently, two official plugins are available:
+```
+src/
+├── api.js                      # base URL, JWT ใน localStorage
+├── App.jsx                     # จัด layout + เชื่อม features
+├── features/
+│   ├── auth/
+│   │   ├── useAuth.js          # login, logout, secret-data
+│   │   ├── LoginForm.jsx
+│   │   └── DashboardPanel.jsx
+│   └── users/
+│       └── useUsers.js         # GET /api/users
+└── shared/components/
+    └── ErrorAlert.jsx
+```
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## API URL
 
-## React Compiler
+Frontend เรียก REST API ผ่าน **Gateway** เท่านั้น (ไม่ยิง backend :5100 โดยตรงจาก browser)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| โหมด | การตั้งค่า |
+|------|------------|
+| Local dev | `VITE_API_URL=http://localhost:5000` (gateway) |
+| Docker | ว่าง — เรียก `/api` ผ่าน Nginx → gateway |
 
-## Expanding the ESLint configuration
+ข้อมูลอยู่ที่ **PostgreSQL** (`make db-up` หรือรวมใน `make docker-up`) — ดู [docs/environments.md](../docs/environments.md)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## คำสั่ง
+
+```bash
+npm run dev
+npm run build
+npm run build:docker   # ใช้ใน Dockerfile
+```

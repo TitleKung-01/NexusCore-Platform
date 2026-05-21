@@ -8,27 +8,31 @@ endif
 
 ROOT        := $(CURDIR)
 SLN         := NexusCore-Platform.sln
-BACKEND     := backend
+BACKEND     := src/NexusCore.Api
 GATEWAY     := gateway
 FRONTEND    := frontend
 
 BACKEND_PORT  := 5100
 GATEWAY_PORT  := 5000
 FRONTEND_PORT := 5173
+POSTGRES_PORT := 5432
 DOCKER_FRONTEND_PORT := 8081
 
 DOTNET := dotnet
 NPM    := npm
 COMPOSE := docker compose
 
-.PHONY: help install restore build ci-local health run backend gateway frontend lint clean stop dev dev-win docker-up docker-down docker-logs
+.PHONY: help install restore build ci-local health run backend gateway frontend lint clean stop db-up db-down dev dev-win docker-up docker-down docker-logs
 
 .DEFAULT_GOAL := help
 
 help:
 	@echo NexusCore-Platform
 	@echo.
-	@echo Local (make dev):
+	@echo PostgreSQL (required for backend):
+	@echo   postgres - localhost:$(POSTGRES_PORT)  (make db-up)
+	@echo.
+	@echo Local (make dev — runs db-up first):
 	@echo   backend  - http://localhost:$(BACKEND_PORT)
 	@echo   gateway  - http://localhost:$(GATEWAY_PORT)
 	@echo   frontend - http://localhost:$(FRONTEND_PORT)
@@ -36,6 +40,7 @@ help:
 	@echo Docker (make docker-up):
 	@echo   frontend - http://localhost:$(DOCKER_FRONTEND_PORT)  (open this in browser)
 	@echo   gateway  - http://localhost:$(GATEWAY_PORT)  (optional)
+	@echo   postgres - included in stack
 	@echo.
 	@echo Targets:
 	@echo   make install      Install dotnet + npm dependencies
@@ -45,9 +50,11 @@ help:
 	@echo   make frontend     Run Vite dev server
 	@echo   make lint         ESLint frontend
 	@echo   make clean        Remove bin, obj, dist
+	@echo   make db-up        Start PostgreSQL container only
+	@echo   make db-down      Stop PostgreSQL container
 	@echo   make stop         Free ports $(BACKEND_PORT), $(GATEWAY_PORT), $(FRONTEND_PORT)
-	@echo   make dev          Local: run all services (one terminal)
-	@echo   make dev-win      Local: 3 separate cmd windows
+	@echo   make dev          Local: db-up + backend + gateway + frontend
+	@echo   make dev-win      Local: db-up + 3 separate cmd windows
 	@echo   make docker-up    Docker: build and start stack
 	@echo   make docker-down  Docker: stop stack
 	@echo   make docker-logs  Docker: follow container logs
@@ -94,8 +101,14 @@ lint:
 
 clean:
 	-$(DOTNET) clean "$(ROOT)\$(SLN)" -v q
-	-if exist "$(ROOT)\$(BACKEND)\bin" rmdir /s /q "$(ROOT)\$(BACKEND)\bin"
-	-if exist "$(ROOT)\$(BACKEND)\obj" rmdir /s /q "$(ROOT)\$(BACKEND)\obj"
+	-if exist "$(ROOT)\src\NexusCore.Api\bin" rmdir /s /q "$(ROOT)\src\NexusCore.Api\bin"
+	-if exist "$(ROOT)\src\NexusCore.Api\obj" rmdir /s /q "$(ROOT)\src\NexusCore.Api\obj"
+	-if exist "$(ROOT)\src\NexusCore.Application\bin" rmdir /s /q "$(ROOT)\src\NexusCore.Application\bin"
+	-if exist "$(ROOT)\src\NexusCore.Application\obj" rmdir /s /q "$(ROOT)\src\NexusCore.Application\obj"
+	-if exist "$(ROOT)\src\NexusCore.Domain\bin" rmdir /s /q "$(ROOT)\src\NexusCore.Domain\bin"
+	-if exist "$(ROOT)\src\NexusCore.Domain\obj" rmdir /s /q "$(ROOT)\src\NexusCore.Domain\obj"
+	-if exist "$(ROOT)\src\NexusCore.Infrastructure\bin" rmdir /s /q "$(ROOT)\src\NexusCore.Infrastructure\bin"
+	-if exist "$(ROOT)\src\NexusCore.Infrastructure\obj" rmdir /s /q "$(ROOT)\src\NexusCore.Infrastructure\obj"
 	-if exist "$(ROOT)\$(GATEWAY)\bin" rmdir /s /q "$(ROOT)\$(GATEWAY)\bin"
 	-if exist "$(ROOT)\$(GATEWAY)\obj" rmdir /s /q "$(ROOT)\$(GATEWAY)\obj"
 	-if exist "$(ROOT)\$(FRONTEND)\dist" rmdir /s /q "$(ROOT)\$(FRONTEND)\dist"
@@ -114,13 +127,20 @@ else
 	done
 endif
 
-dev: stop
+db-up:
+	$(COMPOSE) up postgres -d
+	@echo PostgreSQL ready on localhost:$(POSTGRES_PORT)
+
+db-down:
+	$(COMPOSE) stop postgres
+
+dev: stop db-up
 	@echo Starting backend :$(BACKEND_PORT), gateway :$(GATEWAY_PORT), frontend :$(FRONTEND_PORT)
 	@echo One terminal - logs may mix. Press Ctrl+C to stop all.
 	$(MAKE) --no-print-directory -j3 backend gateway frontend
 
 # /D sets working dir — avoids broken cd quoting with spaces in path
-dev-win: stop
+dev-win: stop db-up
 ifeq ($(OS),Windows_NT)
 	cmd /c start "NexusCore Backend" /D "$(CURDIR)" cmd /k make backend
 	cmd /c start "NexusCore Gateway" /D "$(CURDIR)" cmd /k make gateway

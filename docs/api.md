@@ -1,11 +1,11 @@
 # REST API (ASP.NET Core)
 
-Backend อยู่ที่ `backend/` — เรียกจาก React ผ่าน **Gateway** (`/api/...`) ไม่ยิงตรงพอร์ต 5100 ใน production/Docker
+Backend อยู่ที่ `src/NexusCore.Api/` (Clean Architecture) — เรียกจาก React ผ่าน **Gateway** (`/api/...`) ไม่ยิงตรงพอร์ต 5100 ใน production/Docker
 
 ## Architecture
 
 ```text
-React (Axios + JWT interceptor) → Gateway :5000 → Backend :5100 → SQLite (EF Core)
+React (Axios + JWT interceptor) → Gateway :5000 → Backend :5100 → PostgreSQL (EF Core + Npgsql)
 ```
 
 | Mode | API base URL |
@@ -49,12 +49,18 @@ FluentValidation บน `LoginRequest`, `CreateUserRequest` — 400 พร้อ
 
 ## Database
 
-- **EF Core + SQLite** (`ConnectionStrings:DefaultConnection`)
-- Local: `backend/nexuscore.db` (gitignored)
-- Docker: volume `backend-data` ที่ `/app/data/nexuscore.db`
+- **EF Core + PostgreSQL** (`ConnectionStrings:DefaultConnection`)
+- Local `make dev`: `Host=localhost;Port=5432` — รัน DB ด้วย `make db-up` (container `postgres`)
+- Docker `make docker-up`: `Host=postgres;Port=5432` — volume `postgres-data`
+- Default credentials (dev): user/database `nexuscore`, password `nexuscore_dev` (override via `.env`)
 
 ```bash
-cd backend
-dotnet ef migrations add <Name> --output-dir Data/Migrations
-dotnet ef database update
+make db-up
+dotnet ef migrations add <Name> \
+  --project src/NexusCore.Infrastructure \
+  --startup-project src/NexusCore.Api \
+  --output-dir Persistence/Migrations
+dotnet ef database update --project src/NexusCore.Infrastructure --startup-project src/NexusCore.Api
 ```
+
+Backend applies pending migrations on startup (`DbInitializer`).
