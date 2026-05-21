@@ -57,9 +57,9 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: ./src
-          file: NexusCore.Api/Dockerfile
+          file: src/NexusCore.Api/Dockerfile
           push: false
-          tags: nexuscore-backend:ci
+          tags: hr-lite-backend:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -68,7 +68,7 @@ jobs:
         with:
           context: ./gateway
           push: false
-          tags: nexuscore-gateway:ci
+          tags: hr-lite-gateway:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -77,6 +77,6 @@ jobs:
         with:
           context: ./frontend
           push: false
-          tags: nexuscore-frontend:ci
+          tags: hr-lite-frontend:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max

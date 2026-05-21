@@ -27,7 +27,7 @@
 |-----|-----------|
 | **dotnet** | compile backend + gateway |
 | **frontend** | production + docker build ของ Vite |
-| **docker** | Dockerfile ถูกต้อง, layer cache |
+| **docker** | Dockerfile ถูกต้อง, layer cache (backend: `src/NexusCore.Api/Dockerfile`, context `./src`) |
 
 ## รันบนเครื่องก่อน push
 
