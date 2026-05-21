@@ -1,0 +1,32 @@
+# Docker stack — uses Production env so gateway talks to backend-service (not localhost)
+services:
+  backend-service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:5100
+      - Jwt__Key=DockerLocalPracticeKey-32CharsMinForHmacSha256!
+    # Internal only — traffic enters via gateway-service
+
+  gateway-service:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:5000
+    ports:
+      - "5000:5000"
+    depends_on:
+      - backend-service
+
+  frontend-service:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80" # เปิดเว็บที่ http://localhost:8080
+    depends_on:
+      - gateway-service

@@ -1,0 +1,24 @@
+# .NET
+**/bin/
+**/obj/
+*.user
+*.suo
+
+# Node / frontend
+frontend/node_modules/
+frontend/dist/
+
+# Env & secrets (keep .env.example / .env.development committed as templates)
+.env
+.env.local
+.env.*.local
+**/secrets.json
+
+# IDE / OS
+.vs/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
