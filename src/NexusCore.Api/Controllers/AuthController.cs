@@ -21,11 +21,4 @@ public class AuthController(IAuthService authService) : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("secret-data")]
-    [Authorize]
-    [ProducesResponseType(typeof(SecretDataResponse), StatusCodes.Status200OK)]
-    public IActionResult GetSecretData()
-    {
-        return Ok(new SecretDataResponse("นี่คือข้อมูลลับระดับองค์กรที่คนมีตั๋ว JWT เท่านั้นที่มองเห็น"));
-    }
 }

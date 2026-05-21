@@ -13,17 +13,23 @@ builder.WebHost.ConfigureKestrel(options =>
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
-// 2. ตั้งค่าระบบป้องกันบอท/ถล่มยิง API (Rate Limiter)
+// 2. Rate limiter — StrictPolicy for production; DevPolicy for local SPA (many parallel calls)
 builder.Services.AddRateLimiter(options =>
 {
     options.AddFixedWindowLimiter("StrictPolicy", opt =>
     {
-        opt.Window = TimeSpan.FromSeconds(10); // ในเวลา 10 วินาที
-        opt.PermitLimit = 5;                  // อนุญาตให้เรียกได้แค่ 5 ครั้งเท่านั้น
-        opt.QueueLimit = 0;                   // เกินกว่านั้นตัดทิ้งทันที ไม่ให้ต่อคิว
+        opt.Window = TimeSpan.FromSeconds(10);
+        opt.PermitLimit = 5;
+        opt.QueueLimit = 0;
     });
-    
-    // หากโดนบล็อก ให้ส่งกลับเป็น HTTP Status Code 429 (Too Many Requests)
+
+    options.AddFixedWindowLimiter("DevPolicy", opt =>
+    {
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.PermitLimit = 300;
+        opt.QueueLimit = 0;
+    });
+
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 });
 

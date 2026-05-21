@@ -1,66 +1,84 @@
 # REST API (ASP.NET Core)
 
-Backend อยู่ที่ `src/NexusCore.Api/` (Clean Architecture) — เรียกจาก React ผ่าน **Gateway** (`/api/...`) ไม่ยิงตรงพอร์ต 5100 ใน production/Docker
+Backend อยู่ที่ `src/NexusCore.Api/` (Clean Architecture) — เรียกจาก React ผ่าน **Gateway** (`/api/...`)
 
 ## Architecture
 
 ```text
-React (Axios + JWT interceptor) → Gateway :5000 → Backend :5100 → PostgreSQL (EF Core + Npgsql)
+React (Axios + JWT) → Gateway :5000 → Backend :5100 → PostgreSQL
 ```
 
-| Mode | API base URL |
-|------|----------------|
-| Local `make dev` | `http://localhost:5000` (`.env.development`) |
-| Docker | same origin `/api` (Nginx → gateway) |
+## Roles
 
-## OpenAPI / Swagger
+`Employee`, `Manager`, `Hr`, `Admin`
 
-รัน backend โดยตรง (Development):
+## Seed users (password: `password123`)
 
-- http://localhost:5100/swagger
-
-ผ่าน Gateway ไม่ proxy `/swagger` — ใช้พอร์ต backend ตอนพัฒนา
+| Username | Role | หมายเหตุ |
+|----------|------|----------|
+| admin | Hr | อนุมัติได้ทุกคำขอ |
+| manager | Manager | อนุมัติลูกทีม (employee) |
+| employee | Employee | ยื่นลา |
 
 ## Endpoints
 
+### Auth
+
 | Method | Path | Auth | คำอธิบาย |
 |--------|------|------|----------|
-| POST | `/api/auth/login` | — | Body: `{ "username", "password" }` → JWT |
-| GET | `/api/auth/secret-data` | Bearer | ข้อมูลลับ (demo) |
-| GET | `/api/users` | Bearer | รายการผู้ใช้ |
-| GET | `/api/users/{id}` | Bearer | ผู้ใช้ตาม id |
-| POST | `/api/users` | Bearer + **Admin** | สร้างผู้ใช้ |
-| GET | `/health` | — | Health (ไม่ผ่าน `/api` prefix ของ gateway route) |
+| POST | `/api/auth/login` | — | `{ username, password }` → JWT |
 
-### Seed user (ครั้งแรกที่ migrate)
+### Profile
 
-- Username: `admin`
-- Password: `password123`
-- Role: `Admin`
+| Method | Path | Auth | คำอธิบาย |
+|--------|------|------|----------|
+| GET | `/api/me` | Bearer | โปรไฟล์ + role |
+| PUT | `/api/me` | Bearer | แก้ fullName, email, phone |
 
-## Frontend
+### Reference data
 
-- `frontend/src/api.js` — Axios instance + **JWT request interceptor** + ลบ token เมื่อ 401
-- ไม่ต้องใส่ `Authorization` เองในแต่ละ request
+| Method | Path | Auth |
+|--------|------|------|
+| GET | `/api/departments` | Bearer |
+| GET | `/api/leave-types` | Bearer |
 
-## Validation
+### Leave requests (workflow)
 
-FluentValidation บน `LoginRequest`, `CreateUserRequest` — 400 พร้อมรายละเอียด field
+สถานะ: `Draft` → `Pending` → `Approved` / `Rejected` / `Cancelled`
+
+| Method | Path | คำอธิบาย |
+|--------|------|----------|
+| GET | `/api/leave-requests?scope=mine` | คำขอของตัวเอง |
+| GET | `/api/leave-requests?scope=pending-approval` | รออนุมัติ (Manager/Hr) |
+| GET | `/api/leave-requests/{id}` | รายละเอียด |
+| POST | `/api/leave-requests` | สร้าง (Draft) |
+| POST | `/api/leave-requests/{id}/submit` | ส่งอนุมัติ |
+| POST | `/api/leave-requests/{id}/approve` | อนุมัติ |
+| POST | `/api/leave-requests/{id}/reject` | ปฏิเสธ + comment |
+| POST | `/api/leave-requests/{id}/cancel` | ยกเลิก (owner) |
+
+### Users / HR
+
+| Method | Path | Auth |
+|--------|------|------|
+| GET | `/api/users` | Bearer |
+| POST | `/api/users` | Admin |
+| PUT | `/api/users/{id}` | Hr, Admin |
+| DELETE | `/api/users/{id}` | Admin |
+| GET | `/api/employees` | Hr, Admin |
+| PUT | `/api/employees/{userId}` | Hr, Admin |
+
+### Health
+
+| GET | `/health` | — |
 
 ## Database
 
-- **EF Core + PostgreSQL** (`ConnectionStrings:DefaultConnection`)
-- Local `make dev`: `Host=localhost;Port=5432` — รัน DB ด้วย `make db-up` (container `postgres`)
-- Docker `make docker-up`: `Host=postgres;Port=5432` — volume `postgres-data`
-- Default credentials (dev): user/database `nexuscore`, password `nexuscore_dev` (override via `.env`)
+PostgreSQL — `make db-up` แล้ว `dotnet ef database update` (หรือ migrate อัตโนมัติตอน start API)
 
 ```bash
-make db-up
 dotnet ef migrations add <Name> \
   --project src/NexusCore.Infrastructure \
   --startup-project src/NexusCore.Api \
   --output-dir Persistence/Migrations
-dotnet ef database update --project src/NexusCore.Infrastructure --startup-project src/NexusCore.Api
 ```
-
-Backend applies pending migrations on startup (`DbInitializer`).

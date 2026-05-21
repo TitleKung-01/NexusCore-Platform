@@ -18,7 +18,9 @@
 | **Development** | `make dev`, `dotnet run` | `gateway/appsettings.Development.json` | `http://localhost:5100` |
 | **Production** | `make docker-up` | `gateway/appsettings.Production.json` | `http://backend-service:5100` |
 
-Shared routes (rate limit, `/api` path): `gateway/appsettings.json`
+Shared routes (`/api` path): `gateway/appsettings.json` — rate limit **StrictPolicy** (5 req / 10s)
+
+Local dev overrides **DevPolicy** (300 req / min): `gateway/appsettings.Development.json`
 
 ## Frontend → API
 

@@ -1,6 +1,6 @@
 # NexusCore Platform
 
-Fullstack demo: React (Vite) + YARP Gateway + ASP.NET Core API (`src/` Clean Architecture — EF Core, PostgreSQL, JWT, FluentValidation, Swagger).
+Intranet HR-lite: React (TypeScript, shadcn/ui) + YARP Gateway + ASP.NET Core API — โปรไฟล์พนักงาน, คำขอลา, workflow อนุมัติ, PostgreSQL.
 
 ## Quick start
 
@@ -11,7 +11,7 @@ make dev    # starts PostgreSQL (Docker) + backend + gateway + frontend
 
 Open http://localhost:5173
 
-Login: `admin` / `password123`
+Demo logins (password `password123`): `employee`, `manager`, `admin`
 
 ## Docker (practice deploy locally)
 

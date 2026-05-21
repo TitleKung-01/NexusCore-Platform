@@ -5,7 +5,7 @@ namespace NexusCore.Application.Validators;
 
 public class CreateUserRequestValidator : AbstractValidator<CreateUserRequest>
 {
-    private static readonly string[] AllowedRoles = ["User", "Admin"];
+    private static readonly string[] AllowedRoles = ["Employee", "Manager", "Hr", "Admin"];
 
     public CreateUserRequestValidator()
     {
@@ -21,6 +21,6 @@ public class CreateUserRequestValidator : AbstractValidator<CreateUserRequest>
 
         RuleFor(x => x.Role)
             .Must(r => AllowedRoles.Contains(r, StringComparer.OrdinalIgnoreCase))
-            .WithMessage("Role must be User or Admin.");
+            .WithMessage("Role must be Employee, Manager, Hr, or Admin.");
     }
 }

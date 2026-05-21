@@ -42,4 +42,28 @@ public class UsersController(IUserService userService) : ControllerBase
 
         return CreatedAtAction(nameof(GetById), new { id = user.Id }, user);
     }
+
+    [HttpPut("{id:guid}")]
+    [Authorize(Roles = "Hr,Admin")]
+    [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateUserRequest request, CancellationToken cancellationToken)
+    {
+        var user = await userService.UpdateAsync(id, request, cancellationToken);
+        if (user is null)
+            return NotFound(new { Message = "User not found or invalid role." });
+        return Ok(user);
+    }
+
+    [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "Admin")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
+    {
+        var deleted = await userService.DeleteAsync(id, cancellationToken);
+        if (!deleted)
+            return NotFound(new { Message = "User not found." });
+        return NoContent();
+    }
 }

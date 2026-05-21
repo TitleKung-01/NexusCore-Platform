@@ -1,37 +1,39 @@
-# NexusCore Frontend — React + Vite
+# NexusCore Frontend — React + TypeScript + shadcn/ui
 
-## โครงสร้าง `src/`
+## Stack
+
+- Vite 8 + React 19 + TypeScript
+- Tailwind CSS v4 + shadcn/ui (new-york)
+- React Router, Axios, Sonner toasts
+
+## Structure
 
 ```
 src/
-├── api.js                      # base URL, JWT ใน localStorage
-├── App.jsx                     # จัด layout + เชื่อม features
-├── features/
-│   ├── auth/
-│   │   ├── useAuth.js          # login, logout, secret-data
-│   │   ├── LoginForm.jsx
-│   │   └── DashboardPanel.jsx
-│   └── users/
-│       └── useUsers.js         # GET /api/users
-└── shared/components/
-    └── ErrorAlert.jsx
+  app/App.tsx           # routes
+  api.ts                # Axios + JWT
+  components/ui/        # shadcn primitives
+  components/layout/    # AppShell sidebar
+  features/
+    auth/               # login, AuthProvider
+    dashboard/
+    profile/
+    leave/
+    approvals/
 ```
 
-## API URL
+## API
 
-Frontend เรียก REST API ผ่าน **Gateway** เท่านั้น (ไม่ยิง backend :5100 โดยตรงจาก browser)
+| Mode | Config |
+|------|--------|
+| Local | `VITE_API_URL=http://localhost:5000` |
+| Docker | empty base URL → `/api` via Nginx |
 
-| โหมด | การตั้งค่า |
-|------|------------|
-| Local dev | `VITE_API_URL=http://localhost:5000` (gateway) |
-| Docker | ว่าง — เรียก `/api` ผ่าน Nginx → gateway |
-
-ข้อมูลอยู่ที่ **PostgreSQL** (`make db-up` หรือรวมใน `make docker-up`) — ดู [docs/environments.md](../docs/environments.md)
-
-## คำสั่ง
+## Commands
 
 ```bash
+npm install
 npm run dev
 npm run build
-npm run build:docker   # ใช้ใน Dockerfile
+npm run build:docker
 ```

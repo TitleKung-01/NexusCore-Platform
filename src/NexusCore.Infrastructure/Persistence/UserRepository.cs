@@ -12,6 +12,9 @@ public class UserRepository(AppDbContext db) : IUserRepository
     public Task<User?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
         db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
 
+    public Task<User?> FindByIdTrackedAsync(Guid id, CancellationToken cancellationToken = default) =>
+        db.Users.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+
     public Task<bool> UsernameExistsAsync(string username, CancellationToken cancellationToken = default) =>
         db.Users.AnyAsync(u => u.Username == username, cancellationToken);
 
@@ -25,6 +28,8 @@ public class UserRepository(AppDbContext db) : IUserRepository
     {
         await db.Users.AddAsync(user, cancellationToken);
     }
+
+    public void Remove(User user) => db.Users.Remove(user);
 
     public Task SaveChangesAsync(CancellationToken cancellationToken = default) =>
         db.SaveChangesAsync(cancellationToken);
