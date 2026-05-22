@@ -3,10 +3,14 @@ using NexusCore.Application.DTOs;
 
 namespace NexusCore.Application.Validators;
 
+/// <summary>
+/// ตรวจสอบคำขอสร้างผู้ใช้ใหม่ (รูปแบบ username, บทบาทที่อนุญาต)
+/// </summary>
 public class CreateUserRequestValidator : AbstractValidator<CreateUserRequest>
 {
     private static readonly string[] AllowedRoles = ["Employee", "Manager", "Hr", "Admin"];
 
+    /// <summary>กำหนดกฎ username, password และ role</summary>
     public CreateUserRequestValidator()
     {
         RuleFor(x => x.Username)

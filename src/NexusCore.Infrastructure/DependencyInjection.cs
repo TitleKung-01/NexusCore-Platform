@@ -10,8 +10,10 @@ using NexusCore.Infrastructure.Storage;
 
 namespace NexusCore.Infrastructure;
 
+/// <summary>ลงทะเบียนบริการชั้น Infrastructure (ฐานข้อมูล, repository, JWT, ที่เก็บไฟล์)</summary>
 public static class DependencyInjection
 {
+    /// <summary>เพิ่ม DbContext PostgreSQL, repository ทั้งหมด, JWT และ LocalFileStorage</summary>
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection")

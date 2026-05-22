@@ -6,11 +6,15 @@ using NexusCore.Domain.Interfaces;
 
 namespace NexusCore.Application.Organization;
 
+/// <summary>
+/// สร้างแผนกและนิยามบทบาทองค์กร
+/// </summary>
 public class OrganizationService(
     ICurrentUserService currentUser,
     IDepartmentRepository departments,
     IRoleDefinitionRepository roles) : IOrganizationService
 {
+    /// <inheritdoc />
     public async Task<ServiceResult<DepartmentResponse>> CreateDepartmentAsync(
         CreateDepartmentRequest request,
         CancellationToken cancellationToken = default)
@@ -40,12 +44,14 @@ public class OrganizationService(
         return ServiceResult<DepartmentResponse>.Ok(new DepartmentResponse(dept.Id, dept.Name, dept.Code));
     }
 
+    /// <inheritdoc />
     public async Task<IReadOnlyList<RoleDefinitionResponse>> ListRolesAsync(CancellationToken cancellationToken = default)
     {
         var list = await roles.GetAllAsync(cancellationToken);
         return list.Select(MapRole).ToList();
     }
 
+    /// <inheritdoc />
     public async Task<ServiceResult<RoleDefinitionResponse>> CreateRoleAsync(
         CreateRoleRequest request,
         CancellationToken cancellationToken = default)

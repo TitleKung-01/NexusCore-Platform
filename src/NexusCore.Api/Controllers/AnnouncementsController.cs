@@ -5,11 +5,13 @@ using NexusCore.Domain.Constants;
 
 namespace NexusCore.Api.Controllers;
 
+/// <summary>กลุ่ม API ประกาศบริษัท — ดูและจัดการประกาศ (Hr/Admin สำหรับเขียน)</summary>
 [ApiController]
 [Route("api/announcements")]
 [Authorize]
 public class AnnouncementsController(IAnnouncementService announcementService) : ControllerBase
 {
+    /// <summary>ดึงประกาศที่เปิดใช้งาน</summary>
     [HttpGet]
     public async Task<IActionResult> List(CancellationToken cancellationToken)
     {
@@ -17,6 +19,7 @@ public class AnnouncementsController(IAnnouncementService announcementService) :
         return Ok(list);
     }
 
+    /// <summary>ดึงประกาศตามรหัส</summary>
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
@@ -26,6 +29,7 @@ public class AnnouncementsController(IAnnouncementService announcementService) :
         return Ok(item);
     }
 
+    /// <summary>สร้างประกาศใหม่</summary>
     [HttpPost]
     [Authorize(Roles = $"{UserRoles.Hr},{UserRoles.Admin}")]
     public async Task<IActionResult> Create([FromBody] CreateAnnouncementRequest request, CancellationToken cancellationToken)
@@ -36,6 +40,7 @@ public class AnnouncementsController(IAnnouncementService announcementService) :
         return CreatedAtAction(nameof(GetById), new { id = result.Data!.Id }, result.Data);
     }
 
+    /// <summary>แก้ไขประกาศ</summary>
     [HttpPut("{id:guid}")]
     [Authorize(Roles = $"{UserRoles.Hr},{UserRoles.Admin}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateAnnouncementRequest request, CancellationToken cancellationToken)

@@ -1,4 +1,5 @@
-﻿using System;
+﻿// การย้ายข้อมูล: เพิ่มฟีเจอร์แพลตฟอร์ม HR (ลา แจ้งเตือน OT สลิป ฯลฯ)
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable

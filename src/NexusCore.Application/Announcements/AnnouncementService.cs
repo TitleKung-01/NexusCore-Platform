@@ -6,24 +6,30 @@ using NexusCore.Domain.Interfaces;
 
 namespace NexusCore.Application.Announcements;
 
+/// <summary>
+/// ประกาศข่าวสารและแจ้งเตือนพนักงานทั้งหมด
+/// </summary>
 public class AnnouncementService(
     ICurrentUserService currentUser,
     IAnnouncementRepository announcements,
     IEmployeeProfileRepository profiles,
     INotificationService notifications) : IAnnouncementService
 {
+    /// <inheritdoc />
     public async Task<IReadOnlyList<AnnouncementResponse>> ListAsync(CancellationToken cancellationToken = default)
     {
         var list = await announcements.ListActiveAsync(cancellationToken);
         return list.Select(Map).ToList();
     }
 
+    /// <inheritdoc />
     public async Task<AnnouncementResponse?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var item = await announcements.FindByIdAsync(id, cancellationToken);
         return item is null ? null : Map(item);
     }
 
+    /// <inheritdoc />
     public async Task<ServiceResult<AnnouncementResponse>> CreateAsync(CreateAnnouncementRequest request, CancellationToken cancellationToken = default)
     {
         if (!currentUser.IsInAnyRole(UserRoles.Hr, UserRoles.Admin))
@@ -48,6 +54,7 @@ public class AnnouncementService(
         return ServiceResult<AnnouncementResponse>.Ok(Map(entity));
     }
 
+    /// <inheritdoc />
     public async Task<ServiceResult<AnnouncementResponse>> UpdateAsync(Guid id, UpdateAnnouncementRequest request, CancellationToken cancellationToken = default)
     {
         if (!currentUser.IsInAnyRole(UserRoles.Hr, UserRoles.Admin))

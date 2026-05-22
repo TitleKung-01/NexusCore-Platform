@@ -5,11 +5,13 @@ using NexusCore.Domain.Constants;
 
 namespace NexusCore.Api.Controllers;
 
+/// <summary>กลุ่ม API สลิปเงินเดือน — ดูรายการ ดาวน์โหลด และอัปโหลด (Hr/Admin)</summary>
 [ApiController]
 [Route("api/payslips")]
 [Authorize]
 public class PayslipsController(IPayslipService payslipService) : ControllerBase
 {
+    /// <summary>ดึงรายการสลิป (กรองตามพนักงานได้)</summary>
     [HttpGet]
     public async Task<IActionResult> List([FromQuery] Guid? employeeId, CancellationToken cancellationToken)
     {
@@ -17,6 +19,7 @@ public class PayslipsController(IPayslipService payslipService) : ControllerBase
         return Ok(list);
     }
 
+    /// <summary>ดาวน์โหลดไฟล์สลิป</summary>
     [HttpGet("{id:guid}/download")]
     public async Task<IActionResult> Download(Guid id, CancellationToken cancellationToken)
     {
@@ -26,6 +29,7 @@ public class PayslipsController(IPayslipService payslipService) : ControllerBase
         return File(file.Value.Stream, file.Value.ContentType, file.Value.FileName);
     }
 
+    /// <summary>อัปโหลดสลิปให้พนักงาน (Hr/Admin)</summary>
     [HttpPost]
     [Authorize(Roles = $"{UserRoles.Hr},{UserRoles.Admin}")]
     [RequestSizeLimit(10 * 1024 * 1024)]

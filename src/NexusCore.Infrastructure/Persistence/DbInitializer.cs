@@ -5,8 +5,10 @@ using NexusCore.Infrastructure.Persistence.SeedData;
 
 namespace NexusCore.Infrastructure.Persistence;
 
+/// <summary>เริ่มต้นฐานข้อมูล: migrate, seed แผนก/ประเภทลา/ผู้ใช้ demo และข้อมูลอ้างอิง</summary>
 public static class DbInitializer
 {
+    /// <summary>รัน migration และ seed ข้อมูลเริ่มต้นถ้ายังไม่มี</summary>
     public static async Task InitializeAsync(AppDbContext db)
     {
         await db.Database.MigrateAsync();
@@ -92,6 +94,7 @@ public static class DbInitializer
         await db.SaveChangesAsync();
     }
 
+    /// <summary>สร้างโควต้าลาประจำปีให้พนักงานทุกคนตามประเภทลา</summary>
     private static async Task SeedLeaveEntitlementsAsync(AppDbContext db)
     {
         var year = DateTime.UtcNow.Year;
@@ -133,6 +136,7 @@ public static class DbInitializer
         }
     }
 
+    /// <summary>ใส่วันหยุดบริษัทตัวอย่างสำหรับปีปัจจุบัน</summary>
     private static async Task SeedHolidaysAsync(AppDbContext db)
     {
         if (await db.CompanyHolidays.AnyAsync())

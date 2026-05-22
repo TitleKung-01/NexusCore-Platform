@@ -16,8 +16,14 @@ using NexusCore.Application.Transfers;
 
 namespace NexusCore.Application;
 
+/// <summary>
+/// ลงทะเบียนบริการชั้น Application (use case) ทั้งหมดใน DI container
+/// </summary>
 public static class DependencyInjection
 {
+    /// <summary>
+    /// เพิ่มบริการธุรกิจ HR ทั้งหมด (auth, leave, attendance ฯลฯ) ให้กับ <see cref="IServiceCollection"/>
+    /// </summary>
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         services.AddScoped<IAuthService, AuthService>();

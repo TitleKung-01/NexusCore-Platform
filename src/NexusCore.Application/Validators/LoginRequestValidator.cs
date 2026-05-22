@@ -3,8 +3,12 @@ using NexusCore.Application.DTOs;
 
 namespace NexusCore.Application.Validators;
 
+/// <summary>
+/// ตรวจสอบความถูกต้องของคำขอเข้าสู่ระบบก่อนเรียก use case
+/// </summary>
 public class LoginRequestValidator : AbstractValidator<LoginRequest>
 {
+    /// <summary>กำหนดกฎ username และ password</summary>
     public LoginRequestValidator()
     {
         RuleFor(x => x.Username)

@@ -7,12 +7,16 @@ using NexusCore.Domain.Interfaces;
 
 namespace NexusCore.Application.Expenses;
 
+/// <summary>
+/// workflow เบิกค่าใช้จ่ายและอนุมัติ
+/// </summary>
 public class ExpenseService(
     ICurrentUserService currentUser,
     IExpenseRepository expenses,
     IEmployeeProfileRepository profiles,
     INotificationService notifications) : IExpenseService
 {
+    /// <inheritdoc />
     public async Task<IReadOnlyList<ExpenseClaimResponse>> ListAsync(string scope, CancellationToken cancellationToken = default)
     {
         if (currentUser.UserId is null)
@@ -34,6 +38,7 @@ public class ExpenseService(
         return list.Select(Map).ToList();
     }
 
+    /// <inheritdoc />
     public async Task<ExpenseClaimResponse?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var claim = await expenses.FindByIdAsync(id, cancellationToken);
@@ -42,6 +47,7 @@ public class ExpenseService(
         return Map(claim);
     }
 
+    /// <inheritdoc />
     public async Task<ServiceResult<ExpenseClaimResponse>> CreateAsync(CreateExpenseClaimRequest request, CancellationToken cancellationToken = default)
     {
         if (currentUser.UserId is null)
@@ -77,6 +83,7 @@ public class ExpenseService(
         return ServiceResult<ExpenseClaimResponse>.Ok(Map(created!));
     }
 
+    /// <inheritdoc />
     public async Task<ServiceResult<ExpenseClaimResponse>> SubmitAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var claim = await expenses.FindByIdTrackedAsync(id, cancellationToken);
@@ -98,6 +105,7 @@ public class ExpenseService(
         return ServiceResult<ExpenseClaimResponse>.Ok(Map(updated!));
     }
 
+    /// <inheritdoc />
     public async Task<ServiceResult<ExpenseClaimResponse>> ApproveAsync(Guid id, DecideExpenseRequest request, CancellationToken cancellationToken = default)
     {
         var claim = await expenses.FindByIdTrackedAsync(id, cancellationToken);
@@ -121,6 +129,7 @@ public class ExpenseService(
         return ServiceResult<ExpenseClaimResponse>.Ok(Map(updated!));
     }
 
+    /// <inheritdoc />
     public async Task<ServiceResult<ExpenseClaimResponse>> RejectAsync(Guid id, DecideExpenseRequest request, CancellationToken cancellationToken = default)
     {
         var claim = await expenses.FindByIdTrackedAsync(id, cancellationToken);
@@ -144,6 +153,7 @@ public class ExpenseService(
         return ServiceResult<ExpenseClaimResponse>.Ok(Map(updated!));
     }
 
+    /// <inheritdoc />
     public async Task<ServiceResult<ExpenseClaimResponse>> CancelAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var claim = await expenses.FindByIdTrackedAsync(id, cancellationToken);

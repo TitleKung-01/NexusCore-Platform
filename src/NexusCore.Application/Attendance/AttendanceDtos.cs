@@ -1,5 +1,6 @@
 namespace NexusCore.Application.Attendance;
 
+/// <summary>บันทึกการลงเวลาเข้า-ออกพร้อมสถานะสาย/ออกก่อนเวลา</summary>
 public record AttendanceResponse(
     Guid Id,
     Guid EmployeeId,
@@ -17,6 +18,8 @@ public record AttendanceResponse(
     bool CanCheckIn,
     bool CanCheckOut);
 
+/// <summary>คำขอลงเวลาเข้า (ระบุวันทำงาน)</summary>
 public record CheckInRequest(string WorkDate);
 
+/// <summary>คำขอลงเวลาออกพร้อมสรุปงาน (ถ้ามี)</summary>
 public record CheckOutRequest(string WorkDate, string? WorkSummary);

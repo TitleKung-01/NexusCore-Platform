@@ -4,11 +4,15 @@ using NexusCore.Domain.Interfaces;
 
 namespace NexusCore.Application.Transfers;
 
+/// <summary>
+/// แสดงประวัติย้ายแผนกตามสิทธิ์ผู้ดู
+/// </summary>
 public class TransferService(
     ICurrentUserService currentUser,
     IEmployeeTransferRepository transfers,
     IEmployeeProfileRepository profiles) : ITransferService
 {
+    /// <inheritdoc />
     public async Task<IReadOnlyList<EmployeeTransferResponse>> ListAsync(
         Guid? employeeId,
         int? limit,

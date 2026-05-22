@@ -1,4 +1,5 @@
-﻿using System;
+﻿// การย้ายข้อมูล: เพิ่มแผนก ประเภทลา โปรไฟล์พนักงาน และคำขอลา (HR Intranet)
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable

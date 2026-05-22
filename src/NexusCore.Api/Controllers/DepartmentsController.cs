@@ -6,6 +6,7 @@ using NexusCore.Domain.Constants;
 
 namespace NexusCore.Api.Controllers;
 
+/// <summary>กลุ่ม API แผนก/หน่วยงาน — ดูรายการและสร้างแผนกใหม่ (Hr/Admin)</summary>
 [ApiController]
 [Route("api/departments")]
 [Authorize]
@@ -13,6 +14,7 @@ public class DepartmentsController(
     IEmployeeService employeeService,
     IOrganizationService organizationService) : ControllerBase
 {
+    /// <summary>ดึงแผนกทั้งหมด</summary>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<DepartmentResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
@@ -21,6 +23,7 @@ public class DepartmentsController(
         return Ok(list);
     }
 
+    /// <summary>สร้างแผนกใหม่</summary>
     [HttpPost]
     [Authorize(Roles = $"{UserRoles.Hr},{UserRoles.Admin}")]
     [ProducesResponseType(typeof(DepartmentResponse), StatusCodes.Status200OK)]

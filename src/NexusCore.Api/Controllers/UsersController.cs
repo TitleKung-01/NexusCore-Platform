@@ -5,11 +5,13 @@ using NexusCore.Application.Services;
 
 namespace NexusCore.Api.Controllers;
 
+/// <summary>กลุ่ม API จัดการบัญชีผู้ใช้ระบบ — ดู สร้าง แก้ไข ลบ (ตามสิทธิ์บทบาท)</summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
 public class UsersController(IUserService userService) : ControllerBase
 {
+    /// <summary>ดึงรายการผู้ใช้ทั้งหมด</summary>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<UserResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
@@ -18,6 +20,7 @@ public class UsersController(IUserService userService) : ControllerBase
         return Ok(users);
     }
 
+    /// <summary>ดึงผู้ใช้ตามรหัส</summary>
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -43,6 +46,7 @@ public class UsersController(IUserService userService) : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = user.Id }, user);
     }
 
+    /// <summary>อัปเดตผู้ใช้ (Hr หรือ Admin)</summary>
     [HttpPut("{id:guid}")]
     [Authorize(Roles = "Hr,Admin")]
     [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
@@ -55,6 +59,7 @@ public class UsersController(IUserService userService) : ControllerBase
         return Ok(user);
     }
 
+    /// <summary>ลบผู้ใช้ (Admin เท่านั้น)</summary>
     [HttpDelete("{id:guid}")]
     [Authorize(Roles = "Admin")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

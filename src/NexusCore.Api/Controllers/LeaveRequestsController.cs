@@ -4,11 +4,13 @@ using NexusCore.Application.Leave;
 
 namespace NexusCore.Api.Controllers;
 
+/// <summary>กลุ่ม API คำขอลา — สร้าง ส่ง อนุมัติ ปฏิเสธ ปฏิทิน และไฟล์แนบ</summary>
 [ApiController]
 [Route("api/leave-requests")]
 [Authorize]
 public class LeaveRequestsController(ILeaveService leaveService) : ControllerBase
 {
+    /// <summary>ดึงรายการคำขอลา (scope: mine / team / all)</summary>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<LeaveRequestResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> List([FromQuery] string scope = "mine", CancellationToken cancellationToken = default)
@@ -17,6 +19,7 @@ public class LeaveRequestsController(ILeaveService leaveService) : ControllerBas
         return Ok(list);
     }
 
+    /// <summary>ดึงคำขอลาตามรหัส</summary>
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(LeaveRequestResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -28,6 +31,7 @@ public class LeaveRequestsController(ILeaveService leaveService) : ControllerBas
         return Ok(item);
     }
 
+    /// <summary>สร้างคำขอลาใหม่ (ร่าง)</summary>
     [HttpPost]
     [ProducesResponseType(typeof(LeaveRequestResponse), StatusCodes.Status201Created)]
     public async Task<IActionResult> Create([FromBody] CreateLeaveRequest request, CancellationToken cancellationToken)
@@ -38,6 +42,7 @@ public class LeaveRequestsController(ILeaveService leaveService) : ControllerBas
         return CreatedAtAction(nameof(GetById), new { id = result.Data!.Id }, result.Data);
     }
 
+    /// <summary>ส่งคำขอลาเพื่อรออนุมัติ</summary>
     [HttpPost("{id:guid}/submit")]
     public async Task<IActionResult> Submit(Guid id, CancellationToken cancellationToken)
     {
@@ -47,6 +52,7 @@ public class LeaveRequestsController(ILeaveService leaveService) : ControllerBas
         return Ok(result.Data);
     }
 
+    /// <summary>อนุมัติคำขอลา</summary>
     [HttpPost("{id:guid}/approve")]
     public async Task<IActionResult> Approve(Guid id, [FromBody] DecideLeaveRequest request, CancellationToken cancellationToken)
     {
@@ -56,6 +62,7 @@ public class LeaveRequestsController(ILeaveService leaveService) : ControllerBas
         return Ok(result.Data);
     }
 
+    /// <summary>ปฏิเสธคำขอลา</summary>
     [HttpPost("{id:guid}/reject")]
     public async Task<IActionResult> Reject(Guid id, [FromBody] DecideLeaveRequest request, CancellationToken cancellationToken)
     {
@@ -65,6 +72,7 @@ public class LeaveRequestsController(ILeaveService leaveService) : ControllerBas
         return Ok(result.Data);
     }
 
+    /// <summary>ยกเลิกคำขอลา</summary>
     [HttpPost("{id:guid}/cancel")]
     public async Task<IActionResult> Cancel(Guid id, CancellationToken cancellationToken)
     {
@@ -74,6 +82,7 @@ public class LeaveRequestsController(ILeaveService leaveService) : ControllerBas
         return Ok(result.Data);
     }
 
+    /// <summary>ปฏิทินลาในช่วงวันที่ (กรองแผนกได้)</summary>
     [HttpGet("calendar")]
     public async Task<IActionResult> Calendar([FromQuery] string from, [FromQuery] string to, [FromQuery] Guid? departmentId, CancellationToken cancellationToken)
     {
@@ -81,6 +90,7 @@ public class LeaveRequestsController(ILeaveService leaveService) : ControllerBas
         return Ok(list);
     }
 
+    /// <summary>รายการไฟล์แนบของคำขอลา</summary>
     [HttpGet("{id:guid}/attachments")]
     public async Task<IActionResult> ListAttachments(Guid id, CancellationToken cancellationToken)
     {
@@ -88,6 +98,7 @@ public class LeaveRequestsController(ILeaveService leaveService) : ControllerBas
         return Ok(list);
     }
 
+    /// <summary>อัปโหลดไฟล์แนบคำขอลา</summary>
     [HttpPost("{id:guid}/attachments")]
     [RequestSizeLimit(10 * 1024 * 1024)]
     public async Task<IActionResult> UploadAttachment(Guid id, IFormFile file, CancellationToken cancellationToken)
@@ -102,6 +113,7 @@ public class LeaveRequestsController(ILeaveService leaveService) : ControllerBas
         return Ok(result.Data);
     }
 
+    /// <summary>ดาวน์โหลดไฟล์แนบ</summary>
     [HttpGet("attachments/{attachmentId:guid}/download")]
     public async Task<IActionResult> DownloadAttachment(Guid attachmentId, CancellationToken cancellationToken)
     {

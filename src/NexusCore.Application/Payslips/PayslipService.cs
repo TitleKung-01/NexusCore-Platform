@@ -5,12 +5,16 @@ using NexusCore.Domain.Interfaces;
 
 namespace NexusCore.Application.Payslips;
 
+/// <summary>
+/// เผยแพร่และดาวน์โหลดสลิปเงินเดือน
+/// </summary>
 public class PayslipService(
     ICurrentUserService currentUser,
     IPayslipRepository payslips,
     IEmployeeProfileRepository profiles,
     IFileStorage fileStorage) : IPayslipService
 {
+    /// <inheritdoc />
     public async Task<IReadOnlyList<PayslipResponse>> ListAsync(Guid? employeeId, CancellationToken cancellationToken = default)
     {
         var target = employeeId ?? currentUser.UserId;
@@ -24,6 +28,7 @@ public class PayslipService(
         return list.Select(Map).ToList();
     }
 
+    /// <inheritdoc />
     public async Task<(Stream Stream, string ContentType, string FileName)?> DownloadAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var payslip = await payslips.FindByIdAsync(id, cancellationToken);
@@ -40,6 +45,7 @@ public class PayslipService(
         return (stream, "application/pdf", payslip.FileName);
     }
 
+    /// <inheritdoc />
     public async Task<ServiceResult<PayslipResponse>> UploadAsync(UploadPayslipRequest request, string fileName, Stream content, CancellationToken cancellationToken = default)
     {
         if (!currentUser.IsInAnyRole(UserRoles.Hr, UserRoles.Admin))

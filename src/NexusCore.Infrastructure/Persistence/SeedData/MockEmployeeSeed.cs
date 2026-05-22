@@ -4,12 +4,12 @@ using NexusCore.Domain.Entities;
 
 namespace NexusCore.Infrastructure.Persistence.SeedData;
 
-/// <summary>Demo workforce (~30 people) — password for all: password123</summary>
+/// <summary>Seed พนักงานตัวอย่าง ~30 คน — รหัสผ่านทุกบัญชี: password123</summary>
 internal static class MockEmployeeSeed
 {
     private const string DemoPassword = "password123";
     private const string EmailDomain = "hr-lite.local";
-    /// <summary>3 managers + 27 employees (admin seeded separately).</summary>
+    /// <summary>เป้าหมาย 3 หัวหน้า + 27 พนักงาน (admin seed แยก)</summary>
     private const int TargetWorkforceCount = 30;
 
     private sealed record MockPerson(
@@ -58,6 +58,7 @@ internal static class MockEmployeeSeed
         new("emp030", "ศศิธร ดำรง", "sasithorn.d", "HR", UserRoles.Employee, "mgr.hr", "081-400-0005"),
     ];
 
+    /// <summary>สร้างผู้ใช้และโปรไฟล์พนักงาน demo ถ้ายังไม่ครบจำนวนเป้าหมาย</summary>
     public static async Task SeedAsync(AppDbContext db)
     {
         var workforceCount = await db.EmployeeProfiles.CountAsync();

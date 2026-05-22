@@ -7,6 +7,9 @@ using NexusCore.Domain.Interfaces;
 
 namespace NexusCore.Application.Leave;
 
+/// <summary>
+/// ดำเนินการ workflow ใบลา ตรวจโควตา แจ้งเตือนผู้อนุมัติ และจัดการไฟล์แนบ
+/// </summary>
 public class LeaveService(
     ICurrentUserService currentUser,
     ILeaveRequestRepository leaveRequests,
@@ -17,6 +20,7 @@ public class LeaveService(
     IFileStorage fileStorage,
     INotificationService notifications) : ILeaveService
 {
+    /// <inheritdoc />
     public async Task<IReadOnlyList<LeaveRequestResponse>> ListAsync(string scope, CancellationToken cancellationToken = default)
     {
         if (currentUser.UserId is null)
@@ -47,6 +51,7 @@ public class LeaveService(
         return list.Select(Map).ToList();
     }
 
+    /// <inheritdoc />
     public async Task<LeaveRequestResponse?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var leave = await leaveRequests.FindByIdAsync(id, cancellationToken);
@@ -55,6 +60,7 @@ public class LeaveService(
         return Map(leave);
     }
 
+    /// <inheritdoc />
     public async Task<ServiceResult<LeaveRequestResponse>> CreateAsync(CreateLeaveRequest request, CancellationToken cancellationToken = default)
     {
         if (currentUser.UserId is null)
@@ -92,6 +98,7 @@ public class LeaveService(
         return ServiceResult<LeaveRequestResponse>.Ok(Map(created!));
     }
 
+    /// <inheritdoc />
     public async Task<ServiceResult<LeaveRequestResponse>> SubmitAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var leave = await leaveRequests.FindByIdTrackedAsync(id, cancellationToken);
@@ -121,6 +128,7 @@ public class LeaveService(
         return ServiceResult<LeaveRequestResponse>.Ok(Map(updated!));
     }
 
+    /// <inheritdoc />
     public async Task<ServiceResult<LeaveRequestResponse>> ApproveAsync(Guid id, DecideLeaveRequest request, CancellationToken cancellationToken = default)
     {
         var leave = await leaveRequests.FindByIdTrackedAsync(id, cancellationToken);
@@ -145,6 +153,7 @@ public class LeaveService(
         return ServiceResult<LeaveRequestResponse>.Ok(Map(updated!));
     }
 
+    /// <inheritdoc />
     public async Task<ServiceResult<LeaveRequestResponse>> RejectAsync(Guid id, DecideLeaveRequest request, CancellationToken cancellationToken = default)
     {
         var leave = await leaveRequests.FindByIdTrackedAsync(id, cancellationToken);
@@ -169,6 +178,7 @@ public class LeaveService(
         return ServiceResult<LeaveRequestResponse>.Ok(Map(updated!));
     }
 
+    /// <inheritdoc />
     public async Task<ServiceResult<LeaveRequestResponse>> CancelAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var leave = await leaveRequests.FindByIdTrackedAsync(id, cancellationToken);
@@ -192,6 +202,7 @@ public class LeaveService(
         return ServiceResult<LeaveRequestResponse>.Ok(Map(updated!));
     }
 
+    /// <inheritdoc />
     public async Task<IReadOnlyList<LeaveBalanceResponse>> GetBalancesAsync(int? year, Guid? employeeId, CancellationToken cancellationToken = default)
     {
         var targetYear = year ?? DateTime.UtcNow.Year;
@@ -227,6 +238,7 @@ public class LeaveService(
         return results;
     }
 
+    /// <inheritdoc />
     public async Task<IReadOnlyList<LeaveCalendarEntryResponse>> GetCalendarAsync(string from, string to, Guid? departmentId, CancellationToken cancellationToken = default)
     {
         if (!DateOnly.TryParse(from, out var fromDate) || !DateOnly.TryParse(to, out var toDate))
@@ -246,6 +258,7 @@ public class LeaveService(
             l.Status.ToString())).ToList();
     }
 
+    /// <inheritdoc />
     public async Task<ServiceResult<LeaveAttachmentResponse>> UploadAttachmentAsync(Guid leaveRequestId, string fileName, Stream content, CancellationToken cancellationToken = default)
     {
         var leave = await leaveRequests.FindByIdAsync(leaveRequestId, cancellationToken);
@@ -270,6 +283,7 @@ public class LeaveService(
         return ServiceResult<LeaveAttachmentResponse>.Ok(MapAttachment(attachment));
     }
 
+    /// <inheritdoc />
     public async Task<(Stream Stream, string ContentType, string FileName)?> DownloadAttachmentAsync(Guid attachmentId, CancellationToken cancellationToken = default)
     {
         var attachment = await attachments.FindByIdAsync(attachmentId, cancellationToken);
@@ -287,6 +301,7 @@ public class LeaveService(
         return (stream, attachment.ContentType, attachment.FileName);
     }
 
+    /// <inheritdoc />
     public async Task<IReadOnlyList<LeaveAttachmentResponse>> ListAttachmentsAsync(Guid leaveRequestId, CancellationToken cancellationToken = default)
     {
         var leave = await leaveRequests.FindByIdAsync(leaveRequestId, cancellationToken);

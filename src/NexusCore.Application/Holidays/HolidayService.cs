@@ -5,16 +5,21 @@ using NexusCore.Domain.Interfaces;
 
 namespace NexusCore.Application.Holidays;
 
+/// <summary>
+/// จัดการปฏิทินวันหยุดบริษัทสำหรับ HR
+/// </summary>
 public class HolidayService(
     ICurrentUserService currentUser,
     ICompanyHolidayRepository holidays) : IHolidayService
 {
+    /// <inheritdoc />
     public async Task<IReadOnlyList<HolidayResponse>> ListAsync(int? year, CancellationToken cancellationToken = default)
     {
         var list = await holidays.ListAsync(year, cancellationToken);
         return list.Select(Map).ToList();
     }
 
+    /// <inheritdoc />
     public async Task<ServiceResult<HolidayResponse>> CreateAsync(CreateHolidayRequest request, CancellationToken cancellationToken = default)
     {
         if (!currentUser.IsInAnyRole(UserRoles.Hr, UserRoles.Admin))
@@ -34,6 +39,7 @@ public class HolidayService(
         return ServiceResult<HolidayResponse>.Ok(Map(entity));
     }
 
+    /// <inheritdoc />
     public async Task<ServiceResult<HolidayResponse>> UpdateAsync(Guid id, UpdateHolidayRequest request, CancellationToken cancellationToken = default)
     {
         if (!currentUser.IsInAnyRole(UserRoles.Hr, UserRoles.Admin))
@@ -52,6 +58,7 @@ public class HolidayService(
         return ServiceResult<HolidayResponse>.Ok(Map(entity));
     }
 
+    /// <inheritdoc />
     public async Task<ServiceResult<bool>> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
         if (!currentUser.IsInAnyRole(UserRoles.Hr, UserRoles.Admin))

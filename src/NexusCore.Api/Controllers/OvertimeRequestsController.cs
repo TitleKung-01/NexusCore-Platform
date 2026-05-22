@@ -4,11 +4,13 @@ using NexusCore.Application.Overtime;
 
 namespace NexusCore.Api.Controllers;
 
+/// <summary>กลุ่ม API คำขอทำงานล่วงเวลา (OT) — สร้าง ส่ง อนุมัติ และยกเลิก</summary>
 [ApiController]
 [Route("api/overtime-requests")]
 [Authorize]
 public class OvertimeRequestsController(IOvertimeService overtimeService) : ControllerBase
 {
+    /// <summary>ดึงรายการคำขอ OT (scope: mine / team / all)</summary>
     [HttpGet]
     public async Task<IActionResult> List([FromQuery] string scope = "mine", CancellationToken cancellationToken = default)
     {
@@ -16,6 +18,7 @@ public class OvertimeRequestsController(IOvertimeService overtimeService) : Cont
         return Ok(list);
     }
 
+    /// <summary>ดึงคำขอ OT ตามรหัส</summary>
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
@@ -25,6 +28,7 @@ public class OvertimeRequestsController(IOvertimeService overtimeService) : Cont
         return Ok(item);
     }
 
+    /// <summary>สร้างคำขอ OT ใหม่</summary>
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateOvertimeRequest request, CancellationToken cancellationToken)
     {
@@ -34,6 +38,7 @@ public class OvertimeRequestsController(IOvertimeService overtimeService) : Cont
         return CreatedAtAction(nameof(GetById), new { id = result.Data!.Id }, result.Data);
     }
 
+    /// <summary>ส่งคำขอ OT เพื่อรออนุมัติ</summary>
     [HttpPost("{id:guid}/submit")]
     public async Task<IActionResult> Submit(Guid id, CancellationToken cancellationToken)
     {
@@ -43,6 +48,7 @@ public class OvertimeRequestsController(IOvertimeService overtimeService) : Cont
         return Ok(result.Data);
     }
 
+    /// <summary>อนุมัติคำขอ OT</summary>
     [HttpPost("{id:guid}/approve")]
     public async Task<IActionResult> Approve(Guid id, [FromBody] DecideOvertimeRequest request, CancellationToken cancellationToken)
     {
@@ -52,6 +58,7 @@ public class OvertimeRequestsController(IOvertimeService overtimeService) : Cont
         return Ok(result.Data);
     }
 
+    /// <summary>ปฏิเสธคำขอ OT</summary>
     [HttpPost("{id:guid}/reject")]
     public async Task<IActionResult> Reject(Guid id, [FromBody] DecideOvertimeRequest request, CancellationToken cancellationToken)
     {
@@ -61,6 +68,7 @@ public class OvertimeRequestsController(IOvertimeService overtimeService) : Cont
         return Ok(result.Data);
     }
 
+    /// <summary>ยกเลิกคำขอ OT</summary>
     [HttpPost("{id:guid}/cancel")]
     public async Task<IActionResult> Cancel(Guid id, CancellationToken cancellationToken)
     {

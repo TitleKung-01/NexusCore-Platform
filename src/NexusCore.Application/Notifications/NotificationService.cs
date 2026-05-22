@@ -4,10 +4,14 @@ using NexusCore.Domain.Interfaces;
 
 namespace NexusCore.Application.Notifications;
 
+/// <summary>
+/// แจ้งเตือนในแอปและทำเครื่องหมายอ่านแล้ว
+/// </summary>
 public class NotificationService(
     ICurrentUserService currentUser,
     IAppNotificationRepository notifications) : INotificationService
 {
+    /// <inheritdoc />
     public async Task<IReadOnlyList<NotificationResponse>> ListAsync(CancellationToken cancellationToken = default)
     {
         if (currentUser.UserId is null)
@@ -17,6 +21,7 @@ public class NotificationService(
         return list.Select(Map).ToList();
     }
 
+    /// <inheritdoc />
     public async Task<UnreadCountResponse> GetUnreadCountAsync(CancellationToken cancellationToken = default)
     {
         if (currentUser.UserId is null)
@@ -26,6 +31,7 @@ public class NotificationService(
         return new UnreadCountResponse(count);
     }
 
+    /// <inheritdoc />
     public async Task<bool> MarkReadAsync(Guid id, CancellationToken cancellationToken = default)
     {
         if (currentUser.UserId is null)
@@ -40,6 +46,7 @@ public class NotificationService(
         return true;
     }
 
+    /// <inheritdoc />
     public async Task MarkAllReadAsync(CancellationToken cancellationToken = default)
     {
         if (currentUser.UserId is null)
@@ -48,6 +55,7 @@ public class NotificationService(
         await notifications.MarkAllReadAsync(currentUser.UserId.Value, cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task NotifyUserAsync(
         Guid userId,
         string eventType,

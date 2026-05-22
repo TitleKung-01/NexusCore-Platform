@@ -2,6 +2,9 @@ using NexusCore.Domain.Entities;
 
 namespace NexusCore.Application.Common;
 
+/// <summary>
+/// ดึงฟิลด์พนักงานจากโปรไฟล์สำหรับแสดงในคำขอลา/โอที/เบิกจ่าย
+/// </summary>
 internal static class RequestEmployeeFields
 {
     internal static (

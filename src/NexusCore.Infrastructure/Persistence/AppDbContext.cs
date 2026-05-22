@@ -8,8 +8,7 @@ using NexusCore.Domain.Enums;
 
 namespace NexusCore.Infrastructure.Persistence;
 
-
-
+/// <summary>DbContext หลักของระบบ HR — แมป entity ทั้งหมดและกฎความสัมพันธ์/ดัชนี</summary>
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 
 {
@@ -58,6 +57,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
 
 
+    /// <summary>กำหนดคีย์ ดัชนี ความยาวฟิลด์ และความสัมพันธ์ระหว่างตาราง</summary>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
 
     {

@@ -5,6 +5,9 @@ using NexusCore.Domain.Interfaces;
 
 namespace NexusCore.Application.Employees;
 
+/// <summary>
+/// โปรไฟล์พนักงาน รายชื่อ HR และอัปเดตแผนก/ผู้จัดการ
+/// </summary>
 public class EmployeeService(
     ICurrentUserService currentUser,
     IEmployeeProfileRepository profiles,
@@ -14,6 +17,7 @@ public class EmployeeService(
     IEmployeeTransferRepository transfers,
     IRoleDefinitionRepository roleDefinitions) : IEmployeeService
 {
+    /// <inheritdoc />
     public async Task<MeResponse?> GetMeAsync(CancellationToken cancellationToken = default)
     {
         if (currentUser.UserId is null)
@@ -23,6 +27,7 @@ public class EmployeeService(
         return profile is null ? null : await MapMeAsync(profile, cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task<ServiceResult<MeResponse>> UpdateMeAsync(UpdateMeRequest request, CancellationToken cancellationToken = default)
     {
         if (currentUser.UserId is null)
@@ -41,18 +46,21 @@ public class EmployeeService(
         return ServiceResult<MeResponse>.Ok(await MapMeAsync(updated!, cancellationToken));
     }
 
+    /// <inheritdoc />
     public async Task<IReadOnlyList<DepartmentResponse>> GetDepartmentsAsync(CancellationToken cancellationToken = default)
     {
         var list = await departments.GetAllAsync(cancellationToken);
         return list.Select(d => new DepartmentResponse(d.Id, d.Name, d.Code)).ToList();
     }
 
+    /// <inheritdoc />
     public async Task<IReadOnlyList<LeaveTypeResponse>> GetLeaveTypesAsync(CancellationToken cancellationToken = default)
     {
         var list = await leaveTypes.GetAllAsync(cancellationToken);
         return list.Select(l => new LeaveTypeResponse(l.Id, l.Name, l.Code)).ToList();
     }
 
+    /// <inheritdoc />
     public async Task<IReadOnlyList<EmployeeListItem>> GetEmployeesAsync(CancellationToken cancellationToken = default)
     {
         if (!currentUser.IsInAnyRole(UserRoles.Hr, UserRoles.Admin))
@@ -62,6 +70,7 @@ public class EmployeeService(
         return list.Select(MapListItem).ToList();
     }
 
+    /// <inheritdoc />
     public async Task<ServiceResult<EmployeeListItem>> UpdateEmployeeAsync(Guid userId, UpdateEmployeeRequest request, CancellationToken cancellationToken = default)
     {
         if (!currentUser.IsInAnyRole(UserRoles.Hr, UserRoles.Admin))

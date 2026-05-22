@@ -4,11 +4,13 @@ using NexusCore.Application.Transfers;
 
 namespace NexusCore.Api.Controllers;
 
+/// <summary>กลุ่ม API ประวัติย้ายแผนก — ดูรายการการโยกย้ายพนักงาน</summary>
 [ApiController]
 [Route("api/employee-transfers")]
 [Authorize]
 public class EmployeeTransfersController(ITransferService transferService) : ControllerBase
 {
+    /// <summary>ดึงประวัติการย้ายแผนก (กรองพนักงานและจำกัดจำนวนได้)</summary>
     [HttpGet]
     public async Task<IActionResult> List(
         [FromQuery] Guid? employeeId,

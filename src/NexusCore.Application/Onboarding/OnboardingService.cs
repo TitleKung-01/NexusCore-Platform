@@ -5,11 +5,15 @@ using NexusCore.Domain.Interfaces;
 
 namespace NexusCore.Application.Onboarding;
 
+/// <summary>
+/// เทมเพลตและงาน onboarding ของพนักงานใหม่
+/// </summary>
 public class OnboardingService(
     ICurrentUserService currentUser,
     IOnboardingRepository onboarding,
     IEmployeeProfileRepository profiles) : IOnboardingService
 {
+    /// <inheritdoc />
     public async Task<IReadOnlyList<OnboardingTemplateResponse>> ListTemplatesAsync(CancellationToken cancellationToken = default)
     {
         if (!currentUser.IsInAnyRole(UserRoles.Hr, UserRoles.Admin))
@@ -19,6 +23,7 @@ public class OnboardingService(
         return templates.Select(MapTemplate).ToList();
     }
 
+    /// <inheritdoc />
     public async Task<ServiceResult<OnboardingTemplateResponse>> CreateTemplateAsync(
         SaveOnboardingTemplateRequest request,
         CancellationToken cancellationToken = default)
@@ -51,6 +56,7 @@ public class OnboardingService(
         return ServiceResult<OnboardingTemplateResponse>.Ok(MapTemplate(template));
     }
 
+    /// <inheritdoc />
     public async Task<ServiceResult<OnboardingTemplateResponse>> UpdateTemplateAsync(
         Guid id,
         SaveOnboardingTemplateRequest request,
@@ -116,6 +122,7 @@ public class OnboardingService(
         return ServiceResult<OnboardingTemplateResponse>.Ok(MapTemplate(updated!));
     }
 
+    /// <inheritdoc />
     public async Task<IReadOnlyList<EmployeeOnboardingTaskResponse>> ListTasksAsync(Guid? employeeId, CancellationToken cancellationToken = default)
     {
         var target = employeeId ?? currentUser.UserId;
@@ -129,6 +136,7 @@ public class OnboardingService(
         return tasks.Select(MapTask).ToList();
     }
 
+    /// <inheritdoc />
     public async Task<ServiceResult<IReadOnlyList<EmployeeOnboardingTaskResponse>>> AssignTemplateAsync(AssignOnboardingRequest request, CancellationToken cancellationToken = default)
     {
         if (!currentUser.IsInAnyRole(UserRoles.Hr, UserRoles.Admin))
@@ -157,6 +165,7 @@ public class OnboardingService(
         return ServiceResult<IReadOnlyList<EmployeeOnboardingTaskResponse>>.Ok(tasks.Select(MapTask).ToList());
     }
 
+    /// <inheritdoc />
     public async Task<ServiceResult<EmployeeOnboardingTaskResponse>> CompleteTaskAsync(Guid taskId, CompleteOnboardingTaskRequest request, CancellationToken cancellationToken = default)
     {
         var task = await onboarding.FindTaskByIdTrackedAsync(taskId, cancellationToken);

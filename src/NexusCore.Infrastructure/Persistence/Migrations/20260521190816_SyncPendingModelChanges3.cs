@@ -1,4 +1,5 @@
-﻿using System;
+﻿// การย้ายข้อมูล: sync การเปลี่ยนแปลงโมเดลที่ค้าง (รอบที่ 3)
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable

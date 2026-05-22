@@ -4,8 +4,10 @@ using NexusCore.Domain.Interfaces;
 
 namespace NexusCore.Infrastructure.Persistence;
 
+/// <summary>เข้าถึงประวัติการย้ายแผนก (EmployeeTransfers)</summary>
 public class EmployeeTransferRepository(AppDbContext db) : IEmployeeTransferRepository
 {
+    /// <summary>ดึงรายการย้ายแผนก (กรองพนักงานและจำกัดจำนวนได้)</summary>
     public async Task<IReadOnlyList<EmployeeTransfer>> ListAsync(
         Guid? employeeId,
         int? limit,
@@ -29,9 +31,11 @@ public class EmployeeTransferRepository(AppDbContext db) : IEmployeeTransferRepo
         return await query.ToListAsync(cancellationToken);
     }
 
+    /// <summary>เพิ่มบันทึกการย้ายแผนก</summary>
     public async Task AddAsync(EmployeeTransfer transfer, CancellationToken cancellationToken = default) =>
         await db.EmployeeTransfers.AddAsync(transfer, cancellationToken);
 
+    /// <summary>บันทึกการเปลี่ยนแปลงลงฐานข้อมูล</summary>
     public Task SaveChangesAsync(CancellationToken cancellationToken = default) =>
         db.SaveChangesAsync(cancellationToken);
 }

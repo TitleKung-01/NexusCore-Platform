@@ -5,8 +5,10 @@ using NexusCore.Domain.Interfaces;
 
 namespace NexusCore.Infrastructure.Persistence;
 
+/// <summary>เข้าถึงคำขอลา (LeaveRequests) พร้อมประเภทลาและข้อมูลพนักงาน</summary>
 public class LeaveRequestRepository(AppDbContext db) : ILeaveRequestRepository
 {
+    /// <summary>Query พื้นฐานพร้อม Include ที่จำเป็น</summary>
     private IQueryable<LeaveRequest> WithIncludes() =>
         db.LeaveRequests
             .AsNoTracking()
@@ -18,9 +20,11 @@ public class LeaveRequestRepository(AppDbContext db) : ILeaveRequestRepository
             .Include(l => l.Employee)
                 .ThenInclude(e => e!.Manager);
 
+    /// <summary>ค้นหาคำขอลาจากรหัส (อ่านอย่างเดียว)</summary>
     public Task<LeaveRequest?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
         WithIncludes().FirstOrDefaultAsync(l => l.Id == id, cancellationToken);
 
+    /// <summary>ค้นหาคำขอลาจากรหัส (ติดตามการเปลี่ยนแปลง)</summary>
     public Task<LeaveRequest?> FindByIdTrackedAsync(Guid id, CancellationToken cancellationToken = default) =>
         db.LeaveRequests
             .Include(l => l.Employee)
@@ -32,24 +36,28 @@ public class LeaveRequestRepository(AppDbContext db) : ILeaveRequestRepository
             .Include(l => l.LeaveType)
             .FirstOrDefaultAsync(l => l.Id == id, cancellationToken);
 
+    /// <summary>ดึงคำขอลาของพนักงานคนหนึ่ง</summary>
     public async Task<IReadOnlyList<LeaveRequest>> GetByEmployeeIdAsync(Guid employeeId, CancellationToken cancellationToken = default) =>
         await WithIncludes()
             .Where(l => l.EmployeeId == employeeId)
             .OrderByDescending(l => l.CreatedAtUtc)
             .ToListAsync(cancellationToken);
 
+    /// <summary>ดึงคำขอลาที่รออนุมัติของทีมภายใต้หัวหน้าคนนี้</summary>
     public async Task<IReadOnlyList<LeaveRequest>> GetPendingForManagerAsync(Guid managerUserId, CancellationToken cancellationToken = default) =>
         await WithIncludes()
             .Where(l => l.Status == LeaveStatus.Pending && l.Employee.ManagerId == managerUserId)
             .OrderBy(l => l.SubmittedAtUtc)
             .ToListAsync(cancellationToken);
 
+    /// <summary>ดึงคำขอลาที่รออนุมัติทั้งองค์กร (สำหรับ HR)</summary>
     public async Task<IReadOnlyList<LeaveRequest>> GetAllPendingAsync(CancellationToken cancellationToken = default) =>
         await WithIncludes()
             .Where(l => l.Status == LeaveStatus.Pending)
             .OrderBy(l => l.SubmittedAtUtc)
             .ToListAsync(cancellationToken);
 
+    /// <summary>ดึงคำขอลาสำหรับปฏิทินในช่วงวันที่ (อนุมัติหรือรอดำเนินการ)</summary>
     public async Task<IReadOnlyList<LeaveRequest>> GetCalendarAsync(DateOnly from, DateOnly to, Guid? departmentId, CancellationToken cancellationToken = default)
     {
         var query = WithIncludes()
@@ -62,6 +70,7 @@ public class LeaveRequestRepository(AppDbContext db) : ILeaveRequestRepository
         return await query.OrderBy(l => l.StartDate).ToListAsync(cancellationToken);
     }
 
+    /// <summary>ดึงประวัติการอนุมัติ/ปฏิเสธ (กรองตามหัวหน้าได้)</summary>
     public async Task<IReadOnlyList<LeaveRequest>> GetApprovalHistoryAsync(Guid? managerId, CancellationToken cancellationToken = default)
     {
         var query = WithIncludes()
@@ -73,6 +82,7 @@ public class LeaveRequestRepository(AppDbContext db) : ILeaveRequestRepository
         return await query.OrderByDescending(l => l.DecidedAtUtc).ToListAsync(cancellationToken);
     }
 
+    /// <summary>รวมจำนวนวันลาที่อนุมัติแล้วในปีที่กำหนด</summary>
     public async Task<decimal> SumApprovedDaysAsync(Guid employeeId, Guid leaveTypeId, int year, CancellationToken cancellationToken = default)
     {
         var approved = await db.LeaveRequests
@@ -87,6 +97,7 @@ public class LeaveRequestRepository(AppDbContext db) : ILeaveRequestRepository
         return total;
     }
 
+    /// <summary>ตรวจว่ามีคำขอลาซ้อนทับช่วงวันที่หรือไม่</summary>
     public Task<bool> HasOverlappingAsync(Guid employeeId, DateOnly start, DateOnly end, Guid? excludeId, CancellationToken cancellationToken = default)
     {
         var query = db.LeaveRequests
@@ -100,9 +111,11 @@ public class LeaveRequestRepository(AppDbContext db) : ILeaveRequestRepository
         return query.AnyAsync(cancellationToken);
     }
 
+    /// <summary>เพิ่มคำขอลาใหม่</summary>
     public async Task AddAsync(LeaveRequest request, CancellationToken cancellationToken = default) =>
         await db.LeaveRequests.AddAsync(request, cancellationToken);
 
+    /// <summary>บันทึกการเปลี่ยนแปลงลงฐานข้อมูล</summary>
     public Task SaveChangesAsync(CancellationToken cancellationToken = default) =>
         db.SaveChangesAsync(cancellationToken);
 }

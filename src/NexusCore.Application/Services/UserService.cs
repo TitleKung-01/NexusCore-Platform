@@ -5,24 +5,30 @@ using NexusCore.Domain.Interfaces;
 
 namespace NexusCore.Application.Services;
 
+/// <summary>
+/// จัดการบัญชีผู้ใช้และสร้างโปรไฟล์พนักงานเริ่มต้นเมื่อเพิ่มผู้ใช้ใหม่
+/// </summary>
 public class UserService(
     IUserRepository users,
     IEmployeeProfileRepository profiles,
     IDepartmentRepository departments,
     IRoleDefinitionRepository roleDefinitions) : IUserService
 {
+    /// <inheritdoc />
     public async Task<IReadOnlyList<UserResponse>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var list = await users.GetAllOrderedAsync(cancellationToken);
         return list.Select(Map).ToList();
     }
 
+    /// <inheritdoc />
     public async Task<UserResponse?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var user = await users.FindByIdAsync(id, cancellationToken);
         return user is null ? null : Map(user);
     }
 
+    /// <inheritdoc />
     public async Task<UserResponse?> CreateAsync(CreateUserRequest request, CancellationToken cancellationToken = default)
     {
         if (await users.UsernameExistsAsync(request.Username, cancellationToken))
@@ -61,6 +67,7 @@ public class UserService(
         return Map(user);
     }
 
+    /// <inheritdoc />
     public async Task<UserResponse?> UpdateAsync(Guid id, UpdateUserRequest request, CancellationToken cancellationToken = default)
     {
         var user = await users.FindByIdTrackedAsync(id, cancellationToken);
@@ -75,6 +82,7 @@ public class UserService(
         return Map(user);
     }
 
+    /// <inheritdoc />
     public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var user = await users.FindByIdTrackedAsync(id, cancellationToken);

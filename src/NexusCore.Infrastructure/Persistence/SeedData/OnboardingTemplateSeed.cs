@@ -3,7 +3,7 @@ using NexusCore.Domain.Entities;
 
 namespace NexusCore.Infrastructure.Persistence.SeedData;
 
-/// <summary>Demo onboarding templates for HR assign dropdown.</summary>
+/// <summary>Seed เทมเพลต onboarding ตัวอย่างสำหรับ HR มอบหมายงาน</summary>
 internal static class OnboardingTemplateSeed
 {
     private sealed record TemplateDef(string Name, string[] Tasks);
@@ -47,6 +47,7 @@ internal static class OnboardingTemplateSeed
             ]),
     ];
 
+    /// <summary>ใส่เทมเพลตและรายการงานเริ่มต้นถ้ายังไม่มี</summary>
     public static async Task SeedAsync(AppDbContext db)
     {
         if (await db.OnboardingTemplates.AnyAsync())

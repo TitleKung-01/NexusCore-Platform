@@ -1,4 +1,5 @@
-﻿using System;
+﻿// การย้ายข้อมูล: สร้างตาราง Users เริ่มต้น
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable

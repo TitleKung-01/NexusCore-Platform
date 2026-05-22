@@ -7,12 +7,16 @@ using NexusCore.Domain.Interfaces;
 
 namespace NexusCore.Application.Overtime;
 
+/// <summary>
+/// workflow คำขอ OT แจ้งเตือนผู้อนุมัติ
+/// </summary>
 public class OvertimeService(
     ICurrentUserService currentUser,
     IOvertimeRequestRepository overtimeRequests,
     IEmployeeProfileRepository profiles,
     INotificationService notifications) : IOvertimeService
 {
+    /// <inheritdoc />
     public async Task<IReadOnlyList<OvertimeRequestResponse>> ListAsync(string scope, CancellationToken cancellationToken = default)
     {
         if (currentUser.UserId is null)
@@ -34,6 +38,7 @@ public class OvertimeService(
         return list.Select(Map).ToList();
     }
 
+    /// <inheritdoc />
     public async Task<OvertimeRequestResponse?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var item = await overtimeRequests.FindByIdAsync(id, cancellationToken);
@@ -42,6 +47,7 @@ public class OvertimeService(
         return Map(item);
     }
 
+    /// <inheritdoc />
     public async Task<ServiceResult<OvertimeRequestResponse>> CreateAsync(CreateOvertimeRequest request, CancellationToken cancellationToken = default)
     {
         if (currentUser.UserId is null)
@@ -70,6 +76,7 @@ public class OvertimeService(
         return ServiceResult<OvertimeRequestResponse>.Ok(Map(created!));
     }
 
+    /// <inheritdoc />
     public async Task<ServiceResult<OvertimeRequestResponse>> SubmitAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var item = await overtimeRequests.FindByIdTrackedAsync(id, cancellationToken);
@@ -91,6 +98,7 @@ public class OvertimeService(
         return ServiceResult<OvertimeRequestResponse>.Ok(Map(updated!));
     }
 
+    /// <inheritdoc />
     public async Task<ServiceResult<OvertimeRequestResponse>> ApproveAsync(Guid id, DecideOvertimeRequest request, CancellationToken cancellationToken = default)
     {
         var item = await overtimeRequests.FindByIdTrackedAsync(id, cancellationToken);
@@ -114,6 +122,7 @@ public class OvertimeService(
         return ServiceResult<OvertimeRequestResponse>.Ok(Map(updated!));
     }
 
+    /// <inheritdoc />
     public async Task<ServiceResult<OvertimeRequestResponse>> RejectAsync(Guid id, DecideOvertimeRequest request, CancellationToken cancellationToken = default)
     {
         var item = await overtimeRequests.FindByIdTrackedAsync(id, cancellationToken);
@@ -137,6 +146,7 @@ public class OvertimeService(
         return ServiceResult<OvertimeRequestResponse>.Ok(Map(updated!));
     }
 
+    /// <inheritdoc />
     public async Task<ServiceResult<OvertimeRequestResponse>> CancelAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var item = await overtimeRequests.FindByIdTrackedAsync(id, cancellationToken);

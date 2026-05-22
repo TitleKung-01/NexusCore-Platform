@@ -5,6 +5,9 @@ using NexusCore.Domain.Interfaces;
 
 namespace NexusCore.Application.Attendance;
 
+/// <summary>
+/// ลงเวลาเข้า-ออก ตรวจสาย/ออกก่อนเวลา และดูประวัติตามสิทธิ์
+/// </summary>
 public class AttendanceService(
     ICurrentUserService currentUser,
     IAttendanceRepository attendance,
@@ -12,6 +15,7 @@ public class AttendanceService(
 {
     private const int MaxWorkSummaryLength = 2000;
 
+    /// <inheritdoc />
     public async Task<AttendanceResponse?> GetTodayAsync(CancellationToken cancellationToken = default)
     {
         if (currentUser.UserId is null)
@@ -22,6 +26,7 @@ public class AttendanceService(
         return record is null ? null : Map(record);
     }
 
+    /// <inheritdoc />
     public async Task<IReadOnlyList<AttendanceResponse>> ListAsync(string from, string to, Guid? employeeId, CancellationToken cancellationToken = default)
     {
         if (!DateOnly.TryParse(from, out var fromDate) || !DateOnly.TryParse(to, out var toDate))
@@ -45,6 +50,7 @@ public class AttendanceService(
         return list.Select(Map).ToList();
     }
 
+    /// <inheritdoc />
     public async Task<ServiceResult<AttendanceResponse>> CheckInAsync(CheckInRequest request, CancellationToken cancellationToken = default)
     {
         if (currentUser.UserId is null)
@@ -66,7 +72,7 @@ public class AttendanceService(
             await attendance.AddAsync(record, cancellationToken);
         }
         else if (record.CheckInUtc is not null)
-            return ServiceResult<AttendanceResponse>.Fail("ลงเวลาเข้าแล้วสำหรับวันนี้", 409);
+            return ServiceResult<AttendanceResponse>.Fail("เธฅเธเน€เธงเธฅเธฒเน€เธเนเธฒเนเธฅเนเธงเธชเธณเธซเธฃเธฑเธเธงเธฑเธเธเธตเน", 409);
         else
             record.CheckInUtc = DateTime.UtcNow;
 
@@ -75,6 +81,7 @@ public class AttendanceService(
         return ServiceResult<AttendanceResponse>.Ok(Map(updated!));
     }
 
+    /// <inheritdoc />
     public async Task<ServiceResult<AttendanceResponse>> CheckOutAsync(CheckOutRequest request, CancellationToken cancellationToken = default)
     {
         if (currentUser.UserId is null)
@@ -85,9 +92,9 @@ public class AttendanceService(
 
         var record = await attendance.FindByEmployeeAndDateTrackedAsync(currentUser.UserId.Value, workDate, cancellationToken);
         if (record is null || record.CheckInUtc is null)
-            return ServiceResult<AttendanceResponse>.Fail("ต้องลงเวลาเข้าก่อน", 400);
+            return ServiceResult<AttendanceResponse>.Fail("เธ•เนเธญเธเธฅเธเน€เธงเธฅเธฒเน€เธเนเธฒเธเนเธญเธ", 400);
         if (record.CheckOutUtc is not null)
-            return ServiceResult<AttendanceResponse>.Fail("ลงเวลาออกแล้วสำหรับวันนี้", 409);
+            return ServiceResult<AttendanceResponse>.Fail("เธฅเธเน€เธงเธฅเธฒเธญเธญเธเนเธฅเนเธงเธชเธณเธซเธฃเธฑเธเธงเธฑเธเธเธตเน", 409);
 
         record.CheckOutUtc = DateTime.UtcNow;
         record.WorkSummary = NormalizeWorkSummary(request.WorkSummary);

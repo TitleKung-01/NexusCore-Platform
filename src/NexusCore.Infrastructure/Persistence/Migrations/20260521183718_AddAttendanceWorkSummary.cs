@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿// การย้ายข้อมูล: เตรียมสคีมาสรุปงานการเข้างาน (ว่าง — sync ภายหลัง)
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 

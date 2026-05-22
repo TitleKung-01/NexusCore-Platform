@@ -8,8 +8,10 @@ using NexusCore.Domain.Entities;
 
 namespace NexusCore.Infrastructure.Identity;
 
+/// <summary>สร้าง JWT สำหรับผู้ใช้ที่เข้าสู่ระบบ</summary>
 public class JwtTokenService(IConfiguration configuration) : IJwtTokenService
 {
+    /// <summary>ออกโทเค็น JWT พร้อม claims รหัสผู้ใช้ ชื่อผู้ใช้ และบทบาท</summary>
     public string CreateToken(User user)
     {
         var jwtSettings = configuration.GetSection("Jwt");

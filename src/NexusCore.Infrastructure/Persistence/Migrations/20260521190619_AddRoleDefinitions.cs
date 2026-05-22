@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿// การย้ายข้อมูล: เพิ่มตาราง RoleDefinitions
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 

@@ -4,11 +4,15 @@ using NexusCore.Domain.Interfaces;
 
 namespace NexusCore.Application.Services;
 
+/// <summary>
+/// ดำเนินการเข้าสู่ระบบและเปลี่ยนรหัสผ่านตามนโยบายความปลอดภัย
+/// </summary>
 public class AuthService(
     IUserRepository users,
     IJwtTokenService jwtTokenService,
     ICurrentUserService currentUser) : IAuthService
 {
+    /// <inheritdoc />
     public async Task<LoginResponse?> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default)
     {
         var user = await users.FindByUsernameAsync(request.Username, cancellationToken);
@@ -20,6 +24,7 @@ public class AuthService(
         return new LoginResponse(token, "เข้าสู่ระบบสำเร็จ");
     }
 
+    /// <inheritdoc />
     public async Task<ServiceResult<bool>> ChangePasswordAsync(ChangePasswordRequest request, CancellationToken cancellationToken = default)
     {
         if (currentUser.UserId is null)

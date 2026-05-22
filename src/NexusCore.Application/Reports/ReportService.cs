@@ -8,6 +8,9 @@ using NexusCore.Domain.Interfaces;
 
 namespace NexusCore.Application.Reports;
 
+/// <summary>
+/// ส่งออกรายงาน CSV สรุปลาและการลงเวลา
+/// </summary>
 public class ReportService(
     ICurrentUserService currentUser,
     IEmployeeProfileRepository profiles,
@@ -21,6 +24,7 @@ public class ReportService(
     private const string AttendanceCsvHeader =
         "Username,Email,Department,FullName,WorkDate,CheckIn,CheckOut,Status,LateMinutes,IsLate,IsEarlyCheckout,WorkSummary";
 
+    /// <inheritdoc />
     public async Task<byte[]> ExportLeaveSummaryCsvAsync(int year, CancellationToken cancellationToken = default)
     {
         if (!currentUser.IsInAnyRole(UserRoles.Hr, UserRoles.Admin))
@@ -56,6 +60,7 @@ public class ReportService(
         return Utf8Csv(sb.ToString());
     }
 
+    /// <inheritdoc />
     public async Task<byte[]> ExportAttendanceCsvAsync(string from, string to, Guid? employeeId, CancellationToken cancellationToken = default)
     {
         if (!currentUser.IsInAnyRole(UserRoles.Hr, UserRoles.Admin))

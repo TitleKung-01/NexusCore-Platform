@@ -14,19 +14,26 @@ using NexusCore.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// --- บริการพื้นฐานและผู้ใช้ปัจจุบัน ---
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+
+// --- Controllers และ JSON (camelCase) ---
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
     });
+
+// --- FluentValidation ---
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 
+// --- Application และ Infrastructure (DbContext, Repository, JWT, ไฟล์) ---
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
+// --- JWT Authentication ---
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]!);
 
@@ -50,6 +57,8 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
+
+// --- Swagger / OpenAPI ---
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -84,12 +93,14 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
+// --- Seed ฐานข้อมูลเมื่อเริ่มแอป ---
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await DbInitializer.InitializeAsync(db);
 }
 
+// --- Swagger (เฉพาะ Development) ---
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -99,6 +110,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+// --- Pipeline: Routing → Auth → Controllers ---
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();

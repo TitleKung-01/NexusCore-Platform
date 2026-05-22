@@ -1,5 +1,6 @@
 namespace NexusCore.Application.Transfers;
 
+/// <summary>ประวัติการย้ายแผนกของพนักงาน</summary>
 public record EmployeeTransferResponse(
     Guid Id,
     Guid EmployeeId,
